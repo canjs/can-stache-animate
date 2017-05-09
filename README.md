@@ -12,15 +12,16 @@ Then bind to a property or event, and provide the desired animation.
 <can-import from="can-stache-animate" {^value}="*animationsModule" />
 <div (. shake)="*animationsModule.default.animations.shake"></div>
 ```
-_**Note: ** The `*` syntax is necessary to use the `can-import` tag to pull a value into the scope._
-_**Note: ** The `animationsModule` is the module itself, so we need to use `animationsModule.default` to get the `canStacheAnimate` objet._
+_**Note:** The `*` syntax is necessary to use the `can-import` tag to pull a value into the scope._
+
+_**Note:** The `animationsModule` is the module itself, so we need to use `animationsModule.default` to get the `canStacheAnimate` objet._
 
 ## Use your own animations
 
 To create your own custom animations, create a file (we'll call it `custom-animations.js`),
 and import `can-stache-animate`.  Use the `registerAnimation` and `registerAnimations` methods to register your animations.
 
-```
+```js
 import $ from 'jquery';
 import canStacheAnimate from 'can-stache-animate';
 
@@ -39,7 +40,7 @@ canStacheAnimate.registerAnimations({
 /* OR */
 
 //register single animation
-canStacheAnimate.registerAnimations("myCustomAnimation",function(vm, el, ev){
+canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
 	$.animate({
 		/* ... */	
 	});
@@ -73,7 +74,7 @@ The `before` method is called prior to the `run` method and is optional.  It is 
 The `after` method is called when the `run` method has completed and is optional.  It is typically revert any changes that were made during `before` or `run` so that the element can be back to its "ground state"
 
 Example:
-```
+```js
 canStacheAnimate.registerAnimations({
 	myCustomShakeAnimation:{
 		before: function(vm, el, ev){
@@ -112,13 +113,13 @@ canStacheAnimate.registerAnimations({
 });
 ```
 
-_**Note: ** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  This is because these methods are wrapped in `can-zone`._
+_**Note:** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  This is because these methods are wrapped in `can-zone`._
 
 ### Function
 If an animation is a function, it is the same as providing that function as an object's `run` property and providing `null` to the `before` and `after` properties.
 
 Example:
-```
+```js
 canStacheAnimate.registerAnimations({
 	myCustomAnimation:function(vm, el, ev){
 		$(el).animate({
@@ -126,13 +127,13 @@ canStacheAnimate.registerAnimations({
 		})
 	}
 });
-
+```
 
 ### String
 If an animation is a string, it is simply set up as an alias to an animation that has already been registered.  
 
 Example:
-```
+```js
 canStacheAnimate.registerAnimations({
 	myCustomAnimation:'fadeIn'
 });
