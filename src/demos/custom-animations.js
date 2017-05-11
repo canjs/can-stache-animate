@@ -3,17 +3,62 @@ import canStacheAnimate from 'can-stache-animate';
 
 canStacheAnimate.setDuration(600);
 canStacheAnimate.registerAnimations({
-	nodShakeBlueNod:{
+	//animations can be a string alias to another animation
+	shakeItUp: "shake",
+
+	//object with css for `before` and `after`
+	//and alias (string) as `run`
+	// sets background to blue, runs the shake animation, then resets background
+	shakeItUpBlue: {
+		//before can be an object which will be treated as a css object
+		before:{
+			"background-color": "blue"
+		},
+
+		//run can be an alias to an existing registered animation
+		run: "shakeItUp",
+
+		//after can be an object which will be treated as a css object
+		after:{
+			"background-color": ""
+		}
+	},
+
+	//animation can be a fully defined object with before, run, and after
+	//all being functions
+	nod:{
+		before: function(vm, el, ev){
+			let $el = $(el);
+			$el.animate({
+				"margin-top":"-20px"
+			});
+		},
+		run: function(vm,el,ev){
+			let $el = $(el);
+			$el.animate({
+				"margin-top":"20px"
+			});
+		},
+		after: function(vm,el,ev){
+			let $el = $(el);
+			$el.animate({
+				"margin-top":"0px"
+			});
+		}
+	},
+
+	//before, run, and after can all be aliases to other registered animations
+	nodShakeNod:{
 		before: "nod",
-		run: "shakeItUpBlue",
+		run: "shake",
 		after: "nod"
 	},
 
 	//I want to be able to specify duration for this specific animation
 	//so that I can use another animation and modify it
-	nodShakeBlueNodFast:{
+	nodFast:{
 		duration: 100, //TODO: this doesn't work
-		run: "nodShakeBlueNod"
+		run: "nod"
 	}
 });
 

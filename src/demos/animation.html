@@ -9,7 +9,7 @@ body{
 	top:1em;
 	height:200px;
 	width: 200px;
-	margin:0 auto;
+	margin: .5em auto;
 }
 
 .demo{
@@ -24,15 +24,17 @@ body{
 </style>
 
 <script type="text/stache" id="demo-stache">
-	<div class="demo-wrap">
 		<can-import 
 			from="can-stache-animate/demos/custom-animations" 
 			{^value}="*animationsModule" 
 		/>
-
+	<div class="demo-wrap">
 		<div class="demo" 
-			(. shake)="*animationsModule.default.animations.nodShakeBlueNodFast"></div>
+			($click)="triggerAnimation"
+			(. animate)="*animationsModule.default.animations.nod"
+			>Click Me</div>
 	</div>
+
 </script>
 <script src="../../node_modules/steal/steal.js" main="@empty">
 	import $ from 'jquery';
@@ -42,22 +44,11 @@ body{
 	import DefineMap from 'can-define/map/';
 
 	var TestMap = DefineMap.extend({
-		timesShaken: {
-			type: "number",
-			value: 0,
-			set(v){
-				this.dispatch("shake");
-				return v;
-			}
-		}
-	});
-	var map = new TestMap({
-		timesShaken: 0
-	});
-
-	setInterval(() => {
-		map.timesShaken = map.timesShaken + 1;
-	}, 8000);
+				triggerAnimation(){
+					this.dispatch("animate");
+				}
+			}),
+			map = new TestMap({});
 
 	var frag = stache.from("demo-stache")(map);
 
