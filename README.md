@@ -145,3 +145,55 @@ Example:
 canStacheAnimate.registerAnimation("myCustomAnimation":"fadeIn");
 ```
 _**Note:** "Already registered animations" include the out-of-the-box animations provided by `can-stache-animate`._
+
+## Animation events
+Sometimes it is useful to know when an animation has started or finished a particular phase.  We can accomplish this easily with events.
+
+Example:
+Register an custom animation, and dispatch events on the scope:
+```js
+canStacheAnimate.registerAnimation("myCustomAnimation", {
+	before: function(vm, el, ev){
+		vm.dispatch("mycustomanimationbefore")
+		$(el).hide().css({
+			"opacity": 0
+		})
+	},
+	run: function(vm, el, ev){
+		vm.dispatch("mycustomanimationrunning")
+		$(el).show().animate({
+			"opacity": 0
+		})
+	},
+	after: function(vm, el, ev){
+		vm.dispatch("mycustomanimationcomplete")
+	}
+});
+```
+
+Listen for those events via stache:
+```
+<div
+ (. animate)="*animationsModule.default.animations.myCustomAnimation"
+ (. mycustomanimationbefore)="handleAnimationBefore"
+ (. mycustomanimationrunning)="handleAnimationRunning"
+ (. mycustomanimationcomplete)="handleAnimationComplete"
+  />
+```
+
+Then simply listen from within the scope or viewmodel:
+```js
+DefineMap.extend({
+	handleAnimationBefore(vm, el, ev){
+		console.log("handleAnimationBefore");
+	},
+	handleAnimationRunning(vm, el, ev){
+		console.log("handleAnimationRunning");
+	},
+	handleAnimationComplete(vm, el, ev){
+		console.log("handleAnimationAfter");
+	}
+})
+```
+
+_**Note:** `dispatch()` takes a second parameter (see [canEvent.dispatch](https://canjs.com/doc/can-event.dispatch.html)), which is an array of arguments that will be provided as additional parameters in the event hanlder (eg: `vm.dispatch("customevent", [{a: "foo"}, {b: "bar"}])` and `handleCustomEvent(vm, el, ev, a, b){ /* a === {a: "foo"} && b === {b: "bar"} */`) _
