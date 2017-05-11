@@ -1,9 +1,8 @@
 import stache from 'can-stache';
 import defaultAnimations from './animations';
 import $ from 'jquery';
-//import './overrides/jquery-animate'; //TODO: conditionally load based on jQuery version (not needed with ^3.2.0)
 import isPlainObject from 'can-util/js/is-plain-object/';
-import Zone from "can-zone";
+import isPromiseLike from 'can-util/js/is-promise-like/';
 
 //TODO: should this be part of can-stache-animate,
 // or should we require that it is imported when needed?
@@ -37,6 +36,8 @@ canStacheAnimate.registerAnimations = function(animationsMap){
  * 
  * a function - will be used as the animation's `run` method
  *
+ * a promise - will be used as the animation's `run` promise
+ *
  * an object - the object should have the following properties:
  *   before - Called prior to the `run` method
  *   run    - This method is required if an object is provided.   
@@ -51,9 +52,9 @@ canStacheAnimate.registerAnimation = function(key, value){
 		animation = canStacheAnimate.getAnimationFromString(animation);
 	}
 
-	//animation is a function
+	//animation is a function or promiseLike
 	//				- expand to before, run, after
-	if(typeof(animation) === 'function'){
+	if(typeof(animation) === 'function' || isPromiseLike(animation)){
 		animation = {
 			before: null,
 			run: animation,
@@ -126,12 +127,13 @@ canStacheAnimate.lookupAnimationInAnimationsMaps = function(animation){
 
 /*
  * @prop animation - {before, run, after}
- *   The values for each of the `before`, `run`, and `after` properties can be a string, object, or function
+ *   The values for each of the `before`, `run`, and `after` properties can be a string, object, a promise, or a function
  *     - string (starts with '.') - assumed to be a class, and that class will be applied
  *     - string (doesn't start with '.') - assumed to be the alias of a mixed-in animation
  *     - object - assumed to be a css object and will be applied directly (no animation) for both `before` and `after`
  *       					and will be animated via jQuery.animate for `run`
- *     - function - will be executed in the proper secquence
+ *     - function - will be executed in the proper sequence
+ *		 - promise - will be executed in the proper sequence
  *
  */
 canStacheAnimate.createHelperFromAnimation = function(animation){
@@ -140,71 +142,105 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 			run = canStacheAnimate.expandAnimationProp(animation.run, true),
 			after = canStacheAnimate.expandAnimationProp(animation.after);
 
-
-	//by this time, `run` should be a function, 
-	//  and `before` and `after` should each be either a function or null
+	//by this time, `run` should be a function or a promise, 
+	//  and `before` and `after` should each be either a function, a promise, or null
 	return function(vm,el,ev){
-	  let beforeZone = () => {
-	  			//before is not required
-	  			if(!before){
-	  				return true;
+	  let $el = $(el),
+	  		makePromise = (method, required, invalidTypeWarning) => {
+	  			//check required
+	  			if(!method && !required){
+	  				return Promise.resolve(true);
 	  			}
 
-			    if(typeof(before) !== 'function'){
-			    	console.warn("Invalid animation property type (`before`). Animation property should be a string, a function, or an object.");
-			    	return true;
+	  			//handle promise
+	  			if(isPromiseLike(method)){
+	  				return method;
+	  			}
+
+			    if(typeof(method) !== 'function'){
+			    	console.warn(invalidTypeWarning);
+	  				return Promise.resolve(true);
 			    }else{
-			    	return before(vm,el,ev);
-			    }
-			  },
-			  runZone = () => {
-		      if(typeof(run) !== 'function'){
-						console.warn("Invalid animation property type (`run`). Animation property should be a string, a function, or an object.");
-						return true;
-		      }else{
-		      	return run(vm,el,ev);
-		      }
-			  },
-			  afterZone = () => {
-	  			//after is not required
-	  			if(!after){
-	  				return true;
-	  			}
+			    	let res = method(vm,el,ev);
+			    	if(res === false){
+			    		return Promise.reject(res);
+			    	}
 
-		      if(typeof(after) !== 'function'){
-						console.warn("Invalid animation property type (`after`). Animation property should be a string, a function, or an object.");
-						return true;
-		      }else{
-		      	return after(vm,el,ev);
-		      }
+			    	//animations aren't required to return anything
+			    	if(typeof(res) === 'undefined'){
+			    		return Promise.resolve(true)
+			    	}
+
+	  				return res;
+			    }
+	  		},
+	  		invalidTypeWarnings = function(){
+	  			let warnings = {};
+	  			["before", "run", "after"].forEach(type => {
+	  				warnings[type] = "Invalid animation property type (`" + type + "`). Animation property should be a string, a function, or an object.";
+	  			});
+	  			return warnings;
+	  		}(),
+			  beforeError = () => {
+		    	//TODO: allow developers to provide a stop method so that they can use their own logic
+		    	$el.stop();
+		    	return false;
+			  },
+			  runError = () => {
+		    	//TODO: allow developers to provide a stop method so that they can use their own logic
+		    	$el.stop();
+		    	return false;
+			  },
+			  afterError = () => {
+		    	//TODO: allow developers to provide a stop method so that they can use their own logic
+		    	$el.stop();
+		    	return false;
 			  };
 
-	  return new Zone().run(beforeZone).then(({result}) => {
+	  return makePromise(before, false, invalidTypeWarnings.before).then(function(){
+	  	let result = arguments[0];
 	    //allow canceling of further animations (`run`, and `after`)
 	    if(result === false){
-	    	$(el).stop();
-	    	//TODO: allow developers to provide a stop method so that they can use their own logic
-	      return false;
+	      return beforeError();
 	    }
 
-	    return new Zone().run(runZone).then(({result}) => {
+	    return makePromise(run, true, invalidTypeWarnings.run).then(function(){
+		  	let result = arguments[0];
+
 				//allow canceling of further animations (`after`)
 	      if(result === false){
-		    	$(el).stop();
-		    	//TODO: allow developers to provide a stop method so that they can use their own logic
-		      return false;
+		      return runError();
 	      }
 
-	      return new Zone().run(afterZone);
-	      
-	    });
+	      return makePromise(after, false, invalidTypeWarnings.after).then(function(){
+			  	let result = arguments[0];
+					//allow canceling of further animations (`after`)
+		      if(result === false){
+			      return afterError();
+		      }
+			  }, error => {
+			  	return afterError();
+			  });
+		  }, error => {
+		  	return runError();
+		  });
+	  }, error => {
+	  	return beforeError();
 	  });
-
-
-
 	};
 };
 
+/*
+ * takes el and all the jquery animate params and 
+ * returns a promise
+ *
+ */
+canStacheAnimate.makeAnimationPromiseJQuery = function(el, prop, speed, easing, callback){
+		var args = [...arguments],
+				$el = $(args.shift());
+
+		return $el.animate.apply($el, args).promise();
+}
 
 /*
  * converts an animation property into a function
@@ -242,7 +278,7 @@ canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject
 	if(isPlainObject(animationProp)){
 		if(animateWhenObject){
 			return (vm,el,ev) => {
-				$(el).animate(animationProp);
+				return canStacheAnimate.makeAnimationPromiseJQuery(el, animationProp);
 			}
 		}else{
 			return (vm,el,ev) => {

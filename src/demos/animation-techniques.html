@@ -30,7 +30,7 @@ body{
 
 <script type="text/stache" id="demo-stache">
 		<can-import 
-			from="can-stache-animate/demos/jquery-animation-collision" 
+			from="can-stache-animate/demos/animation-techniques" 
 			{^value}="*animationsModule" 
 		/>
 
@@ -86,24 +86,6 @@ body{
 	</div>
 
 
-	<div class="container">
-		<div class="demo-wrap">
-			<div class="demo" 
-				(. animate4)="*animationsModule.default.animations.hop4"
-				></div>
-		</div>
-
-		<div class="demo-wrap">
-			<div class="demo" 
-				($click)="triggerAnimation4"
-				(. animate4)="*animationsModule.default.animations.dip4"
-				>
-				click me
-			</div>
-		</div>
-	</div>
-
-
 </script>
 <script src="../../node_modules/steal/steal.js" main="@empty">
 	import $ from 'jquery';
@@ -111,45 +93,7 @@ body{
 	import stache from 'can-stache';
 	import canStacheBindings from 'can-stache-bindings';
 	import DefineMap from 'can-define/map/';
-	import Zone from 'can-zone';
 
-	// var testZone = function(){
-	//   new Zone().run(() => {
-	//   	console.log("zone 1-1 - before");
-	//   	setTimeout(() => {
-	//   		console.log("zone 1-1 - after");
-	//   	}, 400);
-	//   }).then(() => {
-	//     return new Zone().run(() => {
-	//     	console.log("zone 1-2 - before");
-	//     	setTimeout(() => {
-	//     		console.log("zone 1-2 - after");
-	//     	}, 400);
-	//     });
-	//   });
-
-	//   new Zone().run(() => {
-	//   	console.log("zone 2-1");
-	//   }).then(() => {
-	//     return new Zone().run(() => {
-	//     	console.log("zone 2-2 - before");
-	//     	setTimeout(() => {
-	//     		console.log("zone 2-2 - after");
-	//     	}, 2000);
-	//     });
-	//   });
-	// };
-	// testZone();
-
-	// /* expect
-	// zone 1-1 - before
-	// zone 2-1
-	// zone 2-2 - before
-	// zone 1-1 - after
-	// zone 1-2 - before
-	// zone 1-2 - after
-	// zone 2-2 - after
-	// */
 
 	var TestMap = DefineMap.extend({
 				triggerAnimation(){
@@ -160,9 +104,6 @@ body{
 				},
 				triggerAnimation3(){
 					this.dispatch("animate3");
-				},
-				triggerAnimation4(){
-					this.dispatch("animate4");
 				}
 			}),
 			map = new TestMap({});

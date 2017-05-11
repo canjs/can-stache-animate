@@ -12,9 +12,9 @@ canStacheAnimate.registerAnimations({
 		},
 		run:function(vm, el, ev){
 			console.log("customFadeIn - run", arguments);
-			$(el).show().animate({
+			return $(el).show().animate({
 				"opaicty": 1
-			})
+			}).promise()
 		},
 		after: function(vm, el, ev){
 			console.log("customFadeIn - after", arguments);

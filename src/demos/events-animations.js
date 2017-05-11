@@ -8,13 +8,13 @@ canStacheAnimate.registerAnimations({
 			$(el).css({
 				"display": "none",
 				"opacity": 0
-			})
+			});
 		},
 		run:function(vm, el, ev){
 			vm.dispatch("customfadeinrunning", [{test: "foo"}]);
-			$(el).show().animate({
+			return $(el).show().animate({
 				"opacity": 1
-			})
+			}).promise();
 		},
 		after: function(vm, el, ev){
 			$(el).css({
