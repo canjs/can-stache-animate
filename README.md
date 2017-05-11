@@ -181,7 +181,7 @@ Listen for those events via stache:
   />
 ```
 
-Then simply listen from within the scope or viewmodel:
+Then handle the events from within the scope or viewmodel:
 ```js
 DefineMap.extend({
 	handleAnimationBefore(vm, el, ev){
