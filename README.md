@@ -28,22 +28,23 @@ import canStacheAnimate from 'can-stache-animate';
 //sets the global duration
 canStacheAnimate.setDuration(600);
 
+//register single animation
+canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
+	$.animate({
+		/* ... */	
+	});
+});
+
+/* OR */
+
 //register multiple animations
 canStacheAnimate.registerAnimations({
 	myCustomAnimation:function(vm, el, ev){
 		$.animate({
 			/* ... */	
 		});
-	}
-});
-
-/* OR */
-
-//register single animation
-canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
-	$.animate({
-		/* ... */	
-	});
+	},
+	/* ...other animations... */
 });
 
 export default canStacheAnimate;
@@ -72,6 +73,14 @@ The `before` method is called prior to the `run` method and is optional.  It is 
 
 #### Object.after - function - optional
 The `after` method is called when the `run` method has completed and is optional.  It is typically revert any changes that were made during `before` or `run` so that the element can be back to its "ground state"
+
+#### Each of these methods receives the following parameters:
+
+##### `context` - the context where the animation is being used
+
+##### `element` - the element on which the animation is being used
+
+##### `event` - the event that triggered the animation
 
 Example:
 ```js
@@ -113,7 +122,10 @@ canStacheAnimate.registerAnimations({
 });
 ```
 
+_**Note:** Returning false from either the `before` or `run` methods will stop further animations from being executed._
+
 _**Note:** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  This is because these methods are wrapped in `can-zone`._
+
 
 ### Function
 If an animation is a function, it is the same as providing that function as an object's `run` property and providing `null` to the `before` and `after` properties.
