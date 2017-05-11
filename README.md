@@ -84,40 +84,38 @@ The `after` method is called when the `run` method has completed and is optional
 
 Example:
 ```js
-canStacheAnimate.registerAnimations({
-	myCustomShakeAnimation:{
-		before: function(vm, el, ev){
-			var $el = $(el);
-			$el.parent().css({
-				"position":"relative"
-			})
-			$el.css({
-				"position":"absolute"
-			})
-		},
-		run: function(vm, el, ev){
-		 var $el = $(el);
-		 $el.animate({
-		 	"left":"-100px"
-		 }, function(){
-		 	$el.animate({
-		 		"left":"100px"
-		 	}, function(){
-		 		$el.animate({
-		 			"left": "0px"
-		 		})
-		 	})
-		 })
-		},
-		after: function(vm, el, ev){
-			var $el = $(el);
-			$el.parent().css({
-				"position":""
-			})
-			$el.css({
-				"position":""
-			})
-		}
+canStacheAnimate.registerAnimation("myCustomShakeAnimation",{
+	before: function(vm, el, ev){
+		var $el = $(el);
+		$el.parent().css({
+			"position":"relative"
+		})
+		$el.css({
+			"position":"absolute"
+		})
+	},
+	run: function(vm, el, ev){
+	 var $el = $(el);
+	 $el.animate({
+	 	"left":"-100px"
+	 }, function(){
+	 	$el.animate({
+	 		"left":"100px"
+	 	}, function(){
+	 		$el.animate({
+	 			"left": "0px"
+	 		})
+	 	})
+	 })
+	},
+	after: function(vm, el, ev){
+		var $el = $(el);
+		$el.parent().css({
+			"position":""
+		})
+		$el.css({
+			"position":""
+		})
 	}
 });
 ```
@@ -132,12 +130,10 @@ If an animation is a function, it is the same as providing that function as an o
 
 Example:
 ```js
-canStacheAnimate.registerAnimations({
-	myCustomAnimation:function(vm, el, ev){
-		$(el).animate({
-			"opacity": 0.5
-		})
-	}
+canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
+	$(el).animate({
+		"opacity": 0.5
+	})
 });
 ```
 
@@ -146,8 +142,6 @@ If an animation is a string, it is simply set up as an alias to an animation tha
 
 Example:
 ```js
-canStacheAnimate.registerAnimations({
-	myCustomAnimation:'fadeIn'
-});
+canStacheAnimate.registerAnimation("myCustomAnimation":"fadeIn");
 ```
 _**Note:** "Already registered animations" include the out-of-the-box animations provided by `can-stache-animate`._
