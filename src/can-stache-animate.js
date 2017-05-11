@@ -1,9 +1,13 @@
 import stache from 'can-stache';
 import defaultAnimations from './animations';
 import $ from 'jquery';
-import './overrides/jquery-animate';
+//import './overrides/jquery-animate'; //TODO: conditionally load based on jQuery version (not needed with ^3.2.0)
 import isPlainObject from 'can-util/js/is-plain-object/';
 import Zone from "can-zone";
+
+//TODO: should this be part of can-stache-animate,
+// or should we require that it is imported when needed?
+import "can-util/dom/events/inserted/inserted"; 
 
 var noop = () => {}; 
 var canStacheAnimate = {};
@@ -140,11 +144,6 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 	//by this time, `run` should be a function, 
 	//  and `before` and `after` should each be either a function or null
 	return function(vm,el,ev){
-
-		let buildMethod = (method) => {
-			return method(vm,el,ev);
-		}
-
 	  let beforeZone = () => {
 	  			//before is not required
 	  			if(!before){
@@ -155,7 +154,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 			    	console.warn("Invalid animation property type (`before`). Animation property should be a string, a function, or an object.");
 			    	return true;
 			    }else{
-			    	return buildMethod(before);
+			    	return before(vm,el,ev);
 			    }
 			  },
 			  runZone = () => {
@@ -163,7 +162,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 						console.warn("Invalid animation property type (`run`). Animation property should be a string, a function, or an object.");
 						return true;
 		      }else{
-		      	return buildMethod(run);
+		      	return run(vm,el,ev);
 		      }
 			  },
 			  afterZone = () => {
@@ -176,21 +175,24 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 						console.warn("Invalid animation property type (`after`). Animation property should be a string, a function, or an object.");
 						return true;
 		      }else{
-		      	return buildMethod(after);
+		      	return after(vm,el,ev);
 		      }
 			  };
 
 	  return new Zone().run(beforeZone).then(({result}) => {
 	    //allow canceling of further animations (`run`, and `after`)
 	    if(result === false){
-	    	//TODO: should we call stop on the element (`$(el).stop()`)?
+	    	$(el).stop();
+	    	//TODO: allow developers to provide a stop method so that they can use their own logic
 	      return false;
 	    }
 
 	    return new Zone().run(runZone).then(({result}) => {
 				//allow canceling of further animations (`after`)
 	      if(result === false){
-	        return false;
+		    	$(el).stop();
+		    	//TODO: allow developers to provide a stop method so that they can use their own logic
+		      return false;
 	      }
 
 	      return new Zone().run(afterZone);
