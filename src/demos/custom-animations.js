@@ -28,22 +28,19 @@ canStacheAnimate.registerAnimations({
 	//all being functions
 	nod:{
 		before: function(vm, el, ev){
-			let $el = $(el);
-			$el.animate({
+			return $(el).animate({
 				"margin-top":"-20px"
-			});
+			}).promise();
 		},
 		run: function(vm,el,ev){
-			let $el = $(el);
-			$el.animate({
+			return $(el).animate({
 				"margin-top":"20px"
-			});
+			}).promise();
 		},
 		after: function(vm,el,ev){
-			let $el = $(el);
-			$el.animate({
+			return $(el).animate({
 				"margin-top":"0px"
-			});
+			}).promise();
 		}
 	},
 
