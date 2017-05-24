@@ -1,1 +1,1 @@
-import './can-stache-animate-test';
+require('./can-stache-animate-test');

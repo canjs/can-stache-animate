@@ -1,5 +1,5 @@
-import QUnit from 'steal-qunit';
-import plugin from './can-stache-animate';
+var QUnit = require('steal-qunit');
+var plugin = require('./can-stache-animate');
 
 QUnit.module('can-stache-animate');
 

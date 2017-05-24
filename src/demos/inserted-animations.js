@@ -1,5 +1,5 @@
-import $ from 'jquery';
-import canStacheAnimate from 'can-stache-animate';
+var $ = require('jquery');
+var canStacheAnimate = require('can-stache-animate');
 
 canStacheAnimate.registerAnimations({
 	customFadeIn:{
@@ -22,4 +22,4 @@ canStacheAnimate.registerAnimations({
 	}
 });
 
-export default canStacheAnimate;
+module.exports = canStacheAnimate;

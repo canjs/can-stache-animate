@@ -1,5 +1,5 @@
-import $ from 'jquery';
-import canStacheAnimate from 'can-stache-animate';
+var $ = require('jquery');
+var canStacheAnimate = require('can-stache-animate');
 
 canStacheAnimate.setDuration(600);
 canStacheAnimate.registerAnimations({
@@ -59,4 +59,4 @@ canStacheAnimate.registerAnimations({
 	}
 });
 
-export default canStacheAnimate;
+module.exports = canStacheAnimate;
