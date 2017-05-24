@@ -82,6 +82,8 @@ The `after` method is called when the `run` method has completed and is optional
 
 ##### `event` - the event that triggered the animation
 
+#### If any of these methods contain asynchronous functionalty, they should return a `Promise`.  for jQuery animations, you can simply use the [`.promise()` method](http://api.jquery.com/animate/#callbacks).
+
 Example:
 ```js
 canStacheAnimate.registerAnimation("myCustomShakeAnimation",{
@@ -96,17 +98,17 @@ canStacheAnimate.registerAnimation("myCustomShakeAnimation",{
 	},
 	run: function(vm, el, ev){
 	 var $el = $(el);
-	 $el.animate({
+	 return $el.animate({
 	 	"left":"-100px"
-	 }, function(){
-	 	$el.animate({
+	 }).promise().then(function(){
+	 	return $el.animate({
 	 		"left":"100px"
-	 	}, function(){
-	 		$el.animate({
+	 	}).promise().then(function(){
+	 		return $el.animate({
 	 			"left": "0px"
-	 		})
+	 		}).promise();
 	 	})
-	 })
+	 }).promise()
 	},
 	after: function(vm, el, ev){
 		var $el = $(el);
@@ -122,7 +124,7 @@ canStacheAnimate.registerAnimation("myCustomShakeAnimation",{
 
 _**Note:** Returning false from either the `before` or `run` methods will stop further animations from being executed._
 
-_**Note:** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  This is because these methods are wrapped in `can-zone`._
+_**Note:** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  Simply return a `Promise`, ans resolve it when any async functionality has completed._
 
 
 ### Function
