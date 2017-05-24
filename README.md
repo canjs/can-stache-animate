@@ -9,12 +9,12 @@ Animations for can-stache
 In your stache template, use `can-import` to pull `can-stache-animate` into the template.
 Then bind to a property or event, and provide the desired animation.
 ```
-<can-import from="can-stache-animate" {^value}="*animationsModule" />
-<div (. shake)="*animationsModule.default.animations.shake"></div>
+<can-import from="can-stache-animate" {^value.animations}="*animations" />
+<div (. shake)="*animations.shake"></div>
 ```
 _**Note:** The `*` syntax is necessary to use the `can-import` tag to pull a value into the scope._
 
-_**Note:** The `animationsModule` is the module itself, so we need to use `animationsModule.default` to get the `canStacheAnimate` objet._
+_**Note:** Use `{^value.animations}` to get the animations object, and set that to a variable (`*animations`) in the scope._
 
 ## Use your own animations
 
@@ -53,8 +53,8 @@ export default canStacheAnimate;
 
 Then import your custom file instead of `can-stache-animate`.
 ```
-<can-import from="my-project/custom-animations" {^value}="*animationsModule" />
-<div (. shake)="*animationsModule.default.animations.myCustomAnimation"></div>
+<can-import from="my-project/custom-animations" {^value.animations}="*animations" />
+<div (. shake)="*animations.myCustomAnimation"></div>
 ```
 
 
