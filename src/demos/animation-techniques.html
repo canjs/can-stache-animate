@@ -31,20 +31,20 @@ body{
 <script type="text/stache" id="demo-stache">
 		<can-import 
 			from="can-stache-animate/demos/animation-techniques" 
-			{^value}="*animationsModule" 
+			{^value.animations}="*animations" 
 		/>
 
 	<div class="container">
 		<div class="demo-wrap">
 			<div class="demo" 
-				(. animate)="*animationsModule.animations.hop"
+				(. animate)="*animations.hop"
 				></div>
 		</div>
 
 		<div class="demo-wrap">
 			<div class="demo" 
 				($click)="triggerAnimation"
-				(. animate)="*animationsModule.animations.dip"
+				(. animate)="*animations.dip"
 				>
 				click me
 			</div>
@@ -54,14 +54,14 @@ body{
 	<div class="container">
 		<div class="demo-wrap">
 			<div class="demo" 
-				(. animate2)="*animationsModule.animations.hop2"
+				(. animate2)="*animations.hop2"
 				></div>
 		</div>
 
 		<div class="demo-wrap">
 			<div class="demo" 
 				($click)="triggerAnimation2"
-				(. animate2)="*animationsModule.animations.dip2"
+				(. animate2)="*animations.dip2"
 				>
 				click me
 			</div>
@@ -71,14 +71,14 @@ body{
 	<div class="container">
 		<div class="demo-wrap">
 			<div class="demo" 
-				(. animate3)="*animationsModule.animations.hop3"
+				(. animate3)="*animations.hop3"
 				></div>
 		</div>
 
 		<div class="demo-wrap">
 			<div class="demo" 
 				($click)="triggerAnimation3"
-				(. animate3)="*animationsModule.animations.dip3"
+				(. animate3)="*animations.dip3"
 				>
 				click me
 			</div>

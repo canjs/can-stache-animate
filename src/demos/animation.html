@@ -26,12 +26,12 @@ body{
 <script type="text/stache" id="demo-stache">
 		<can-import 
 			from="can-stache-animate/demos/custom-animations" 
-			{^value}="*animationsModule" 
+			{^value.animations}="*animations" 
 		/>
 	<div class="demo-wrap">
 		<div class="demo" 
 			($click)="triggerAnimation"
-			(. animate)="*animationsModule.animations.nod"
+			(. animate)="*animations.nod"
 			>Click Me</div>
 	</div>
 
