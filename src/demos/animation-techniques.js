@@ -1,5 +1,5 @@
-import $ from 'jquery';
-import canStacheAnimate from 'can-stache-animate';
+var $ = require('jquery');
+var canStacheAnimate = require('can-stache-animate');
 
 canStacheAnimate.registerAnimations({
 	//hop cancels further animations
@@ -7,7 +7,7 @@ canStacheAnimate.registerAnimations({
 		before: function(vm, el, ev){
 			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
 				"margin-top":"-20px"
-			}, 400).promise().then(() => {
+			}, 400).promise().then(function(){
 				return false;
 			});
 		},
@@ -35,10 +35,10 @@ canStacheAnimate.registerAnimations({
 	hop2:function(vm,el,ev){
 		return canStacheAnimate.makeAnimationPromiseJQuery(el,{
 			"margin-top":"-20px"
-		}, 400).then(() => {
+		}, 400).then(function(){
 			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
 				"margin-top":"0px"
-			}, 400).then(() => {
+			}, 400).then(function(){
 				$(el).css({
 					"margin-top":""
 				});
@@ -49,10 +49,10 @@ canStacheAnimate.registerAnimations({
 	dip2: function(vm,el,ev){
 		return canStacheAnimate.makeAnimationPromiseJQuery(el,{
 			"margin-top":"20px"
-		}, 2000).then(() => {
+		}, 2000).then(function(){
 			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
 				"margin-top":"0px"
-			}, 2000).then(() => {
+			}, 2000).then(function(){
 				$(el).css({
 					"margin-top":""
 				});
@@ -89,4 +89,4 @@ canStacheAnimate.registerAnimations({
 	}
 });
 
-export default canStacheAnimate;
+module.exports = canStacheAnimate;

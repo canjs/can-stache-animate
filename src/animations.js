@@ -1,23 +1,23 @@
-import $ from 'jquery';
+var $ = require('jquery');
 
 var animations = {
 	shake: function(vm, el, ev){
 		let $el = $(el);
-		$el.animate({
+		return $el.animate({
 			"margin-left":"-20px"
-		},() => {
-			$el.animate({
+		}).promise().then(function(){
+			return $el.animate({
 				"margin-left":"20px"
-			}, () => {
-				$el.animate({
+			}).promise().then(function(){
+				return $el.animate({
 					"margin-left":"0px"
-				}, () => {
+				}).promise().then(function(){
 					$el.css({
 						"margin-left":""
-					})
-				})
+					});
+				});
 			})
-		})
+		}).promise()
 	}
 };
 
@@ -29,9 +29,11 @@ var animations = {
 	'fadeIn', 
 	'fadeOut', 
 	'fadeToggle'
-].forEach(anim => {
-	animations[anim] = (vm, el, ev) => $(el)[anim]();
+].forEach(function(anim){
+	animations[anim] = function(vm, el, ev) { 
+		$(el)[anim](); 
+	};
 });
 
 
-export default animations;
+module.exports = animations

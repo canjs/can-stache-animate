@@ -35,7 +35,7 @@ body{
 	<div class="demo-wrap">
 		{{#if isHidden}}<p>hidden</p>{{else}}<p>visible</p>{{/if}}
 		<div class="demo demo-2 {{#if isHidden}}hidden{{/if}}"
-				 (. fadein)="*animationsModule.default.animations.customFadeIn"
+				 (. fadein)="*animationsModule.animations.customFadeIn"
 				 (. customfadeinbefore)="handleAnimationBefore"
 				 (. customfadeinrunning)="handleAnimationRunning"
 				 (. customfadeincomplete)="handleAnimationComplete"

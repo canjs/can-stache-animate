@@ -1,14 +1,14 @@
-import stache from 'can-stache';
-import defaultAnimations from './animations';
-import $ from 'jquery';
-import isPlainObject from 'can-util/js/is-plain-object/';
-import isPromiseLike from 'can-util/js/is-promise-like/';
+var stache = require('can-stache');
+var defaultAnimations = require('./animations');
+var $ = require('jquery');
+var isPlainObject = require('can-util/js/is-plain-object/');
+var isPromiseLike = require('can-util/js/is-promise-like/');
 
 //TODO: should this be part of can-stache-animate,
 // or should we require that it is imported when needed?
-import "can-util/dom/events/inserted/inserted"; 
+require("can-util/dom/events/inserted/inserted"); 
 
-var noop = () => {}; 
+var noop = function(){}; 
 var canStacheAnimate = {};
 
 canStacheAnimate.duration;
@@ -45,7 +45,7 @@ canStacheAnimate.registerAnimations = function(animationsMap){
  *
  */
 canStacheAnimate.registerAnimation = function(key, value){
-	let animation = value;
+	var animation = value;
 
 	//animation is a string -> look up in existing animations
 	if(typeof(animation) === 'string'){
@@ -64,7 +64,7 @@ canStacheAnimate.registerAnimation = function(key, value){
 
 	//animation is object
 	//				- assume before, run, after
-	let animationIsObject = isPlainObject(animation),
+	var animationIsObject = isPlainObject(animation),
 			animationHasRunProperty = !!animation.run;
 
 	if(animationIsObject && animationHasRunProperty){
@@ -93,7 +93,7 @@ canStacheAnimate.getAnimationFromString = function(animation){
 	while(typeof(animation) === "string"){
 
 		//if we find a registered animation, use that
-		let finalAnimation = canStacheAnimate.animations[animation];
+		var finalAnimation = canStacheAnimate.animations[animation];
 		if(finalAnimation){
 			animation = finalAnimation;
 			break;
@@ -113,9 +113,9 @@ canStacheAnimate.getAnimationFromString = function(animation){
  * @prop animation - should be a string
  */
 canStacheAnimate.lookupAnimationInAnimationsMaps = function(animation){
-	var returnVal;
+	var returnVal, thisAnimation;
 	for(var i = 0; i < canStacheAnimate.animationsMaps.length; i++){
-		let thisAnimation = canStacheAnimate.animationsMaps[i][animation];
+		thisAnimation = canStacheAnimate.animationsMaps[i][animation];
 		if(thisAnimation){
 			returnVal = thisAnimation;
 			break;
@@ -138,15 +138,15 @@ canStacheAnimate.lookupAnimationInAnimationsMaps = function(animation){
  */
 canStacheAnimate.createHelperFromAnimation = function(animation){
 
-	let before = canStacheAnimate.expandAnimationProp(animation.before),
+	var before = canStacheAnimate.expandAnimationProp(animation.before),
 			run = canStacheAnimate.expandAnimationProp(animation.run, true),
 			after = canStacheAnimate.expandAnimationProp(animation.after);
 
 	//by this time, `run` should be a function or a promise, 
 	//  and `before` and `after` should each be either a function, a promise, or null
 	return function(vm,el,ev){
-	  let $el = $(el),
-	  		makePromise = (method, required, invalidTypeWarning) => {
+	  var $el = $(el),
+	  		makePromise = function(method, required, invalidTypeWarning){
 	  			//check required
 	  			if(!method && !required){
 	  				return Promise.resolve(true);
@@ -161,7 +161,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 			    	console.warn(invalidTypeWarning);
 	  				return Promise.resolve(true);
 			    }else{
-			    	let res = method(vm,el,ev);
+			    	var res = method(vm,el,ev);
 			    	if(res === false){
 			    		return Promise.reject(res);
 			    	}
@@ -175,37 +175,37 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 			    }
 	  		},
 	  		invalidTypeWarnings = function(){
-	  			let warnings = {};
-	  			["before", "run", "after"].forEach(type => {
+	  			var warnings = {};
+	  			["before", "run", "after"].forEach(function(type){
 	  				warnings[type] = "Invalid animation property type (`" + type + "`). Animation property should be a string, a function, or an object.";
 	  			});
 	  			return warnings;
 	  		}(),
-			  beforeError = () => {
+			  beforeError = function(){
 		    	//TODO: allow developers to provide a stop method so that they can use their own logic
 		    	$el.stop();
 		    	return false;
 			  },
-			  runError = () => {
+			  runError = function(){
 		    	//TODO: allow developers to provide a stop method so that they can use their own logic
 		    	$el.stop();
 		    	return false;
 			  },
-			  afterError = () => {
+			  afterError = function(){
 		    	//TODO: allow developers to provide a stop method so that they can use their own logic
 		    	$el.stop();
 		    	return false;
 			  };
 
 	  return makePromise(before, false, invalidTypeWarnings.before).then(function(){
-	  	let result = arguments[0];
+	  	var result = arguments[0];
 	    //allow canceling of further animations (`run`, and `after`)
 	    if(result === false){
 	      return beforeError();
 	    }
 
 	    return makePromise(run, true, invalidTypeWarnings.run).then(function(){
-		  	let result = arguments[0];
+		  	var result = arguments[0];
 
 				//allow canceling of further animations (`after`)
 	      if(result === false){
@@ -213,18 +213,18 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 	      }
 
 	      return makePromise(after, false, invalidTypeWarnings.after).then(function(){
-			  	let result = arguments[0];
+			  	var result = arguments[0];
 					//allow canceling of further animations (`after`)
 		      if(result === false){
 			      return afterError();
 		      }
-			  }, error => {
+			  }, function(error){
 			  	return afterError();
 			  });
-		  }, error => {
+		  }, function(error){
 		  	return runError();
 		  });
-	  }, error => {
+	  }, function(error){
 	  	return beforeError();
 	  });
 	};
@@ -256,7 +256,7 @@ canStacheAnimate.makeAnimationPromiseJQuery = function(el, prop, speed, easing, 
  * @returns function
  * 
  */
-canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject = false){
+canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject){
 
 	if(!animationProp){
 		return null;
@@ -265,7 +265,7 @@ canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject
 	//if starts with '.' - assumed to be a class, and that class will be applied
 	if(typeof(animationProp) === 'string'){
 		if(animationProp.substr(0,1) === '.'){
-			return (vm,el,ev) => {
+			return function(vm,el,ev){
 				$(el).addClass(animationProp.substr(1));
 			}
 		}
@@ -277,11 +277,11 @@ canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject
 	//object - assumed to be a css object and will be applied directly (no animation) for both `before` and `after`
 	if(isPlainObject(animationProp)){
 		if(animateWhenObject){
-			return (vm,el,ev) => {
+			return function(vm,el,ev){
 				return canStacheAnimate.makeAnimationPromiseJQuery(el, animationProp);
 			}
 		}else{
-			return (vm,el,ev) => {
+			return function(vm,el,ev){
 				$(el).css(animationProp);
 			}
 		}
@@ -289,7 +289,7 @@ canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject
 
 	//function - will be executed in the proper secquence
 	if(typeof(animationProp) === 'function'){
-		return (vm,el,ev) => {
+		return function(vm,el,ev){
 			return animationProp(vm,el,ev);
 		}
 	}
@@ -305,4 +305,4 @@ canStacheAnimate.setDuration = function(duration){
 canStacheAnimate.setDuration(400);
 canStacheAnimate.registerAnimations(defaultAnimations);
 
-export default canStacheAnimate;
+module.exports = canStacheAnimate;
