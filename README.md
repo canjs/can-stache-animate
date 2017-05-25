@@ -17,20 +17,6 @@ _**Note:** The `*` syntax is necessary to use the `can-import` tag to pull a val
 _**Note:** Use `{^value.animations}` to get the animations object, and set that to a variable (`*animations`) in the scope._
 
 
-## `$inserted`
-
-When importing animations with `can-import`, elements' `$inserted` events will fire before the imported animations make it into the scope.
-
-Wait for the animations to be in the scope before rendering the elements like this:
-```
-<can-import from="can-stache-animate" {^value.animations}="*animations" />
-{{#*animations}}
-	<div style="display:none;" ($inserted)="*animations.fadeIn" />
-{{/*animations}}
-```
-_**Note:** Set the element's style initially to `display:none;` because the `*animations.fadeIn` helper expects the element to not be displayed._
-
-
 ## Use your own animations
 
 To create your own custom animations, create a file (we'll call it `custom-animations.js`),
@@ -214,3 +200,80 @@ DefineMap.extend({
 ```
 
 _**Note:** `dispatch()` takes a second parameter (see [canEvent.dispatch](https://canjs.com/doc/can-event.dispatch.html)), which is an array of arguments that will be provided as additional parameters in the event hanlder (eg: `vm.dispatch("customevent", [{a: "foo"}, {b: "bar"}])` and `handleCustomEvent(vm, el, ev, a, b){ /* a === {a: "foo"} && b === {b: "bar"} */`) _
+
+
+## Special event handling
+
+Some events require additional setup.
+
+
+### `$inserted`
+
+When importing animations with `can-import`, elements' `$inserted` events will fire before the imported animations make it into the scope.
+
+Wait for the animations to be in the scope before rendering the elements like this:
+```
+<can-import from="can-stache-animate" {^value.animations}="*animations" />
+{{#*animations}}
+	<div style="display:none;" ($inserted)="*animations.fadeIn" />
+{{/*animations}}
+```
+_**Note:** Set the element's style initially to `display:none;` because the `*animations.fadeIn` helper expects the element to not be displayed._
+
+
+### `$beforeremove`
+It is sometimes useful to perform an animation on an element prior to its being removed from the DOM.  `can-stache-animate` provides a `$beforeremove` event that can be used to accomplish this.  Here's how it works:
+
+#### dispatch-async
+The `$beforeremove` event is an async event which means that it has some additional methods that can be used during the event's lifetime.  
+
+The most important of these methods are:
+
+##### `event.pause()`
+Delay the execution of the event's default behavior until `event.resume()` is called.  In the case above, pausing the `$beforeremove` event would delay execution of the `$remove` event.
+
+##### `event.resume()`
+Continue executing the event's default behavior
+
+##### `event.cancel()`
+Prevent the event's default behavior similar to `.preventDefault()` in standard events.
+
+#### Writing the animation for `$beforeremove`
+Here is an example of how to use the async event to write a `beforeremove` animation:
+
+```js
+canStacheAnimate.registerAnimation('customFadeOut', {
+	before: function(vm, el, ev){
+
+		// cancel the event under specified circumstances
+		if($(el).is(".cancel")){
+			ev.cancel();
+
+			// return false to stop the remaining animation methods from running 
+			// (`run` and `after`)
+			return false;
+		}
+
+		// the event wasn't cancelled, pause it until our animation is done
+		ev.pause();
+	},
+
+	run: function(vm, el, ev){
+		return $(el).fadeOut().promise()
+	},
+
+	after: function(vm, el, ev){
+		// the animation has completed, so we can continue with the default behavior
+		ev.resume();
+	}
+});
+```
+
+#### Use Stache for adding/removing elements
+
+For example, conditionally render an element based on a scope property:
+```
+{{#if showElement}}
+	<div ($beforeremove)="*animations.customFadeOut" />
+{{/if}}
+```

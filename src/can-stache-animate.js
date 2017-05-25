@@ -4,9 +4,9 @@ var $ = require('jquery');
 var isPlainObject = require('can-util/js/is-plain-object/');
 var isPromiseLike = require('can-util/js/is-promise-like/');
 
-//TODO: should this be part of can-stache-animate,
-// or should we require that it is imported when needed?
 require("can-util/dom/events/inserted/inserted"); 
+require("can-util/dom/events/removed/removed"); 
+require('can-stache-animate/can-util/dom/mutate/mutate');
 
 var noop = function(){}; 
 var canStacheAnimate = {};
