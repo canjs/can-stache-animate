@@ -16,6 +16,21 @@ _**Note:** The `*` syntax is necessary to use the `can-import` tag to pull a val
 
 _**Note:** Use `{^value.animations}` to get the animations object, and set that to a variable (`*animations`) in the scope._
 
+
+## `$inserted`
+
+When importing animations with `can-import`, elements' `$inserted` events will fire before the imported animations make it into the scope.
+
+Wait for the animations to be in the scope before rendering the elements like this:
+```
+<can-import from="can-stache-animate" {^value.animations}="*animations" />
+{{#*animations}}
+	<div style="display:none;" ($inserted)="*animations.fadeIn" />
+{{/*animations}}
+```
+_**Note:** Set the element's style initially to `display:none;` because the `*animations.fadeIn` helper expects the element to not be displayed._
+
+
 ## Use your own animations
 
 To create your own custom animations, create a file (we'll call it `custom-animations.js`),

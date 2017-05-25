@@ -10,6 +10,7 @@ body{
 	height:200px;
 	width: 200px;
 	margin: .5em auto;
+	display:inline-block;
 }
 
 .demo{
@@ -28,18 +29,26 @@ body{
 
 <script type="text/stache" id="demo-stache">
 		<can-import 
-			from="can-stache-animate/demos/inserted-animations" 
+			from="can-stache-animate" 
 			{^value.animations}="*animations" 
 		/>
 	<div class="demo-wrap">
-		<div class="demo"
-				 ($inserted)="*animations.customFadeIn" />
+	{{#*animations}}
+		<div class="demo hidden" ($inserted)="*animations.fadeIn" />
+	{{/*animations}}
 	</div>
 
 	<div class="demo-wrap">
 		<div class="demo demo-2"
 				 ($inserted)="handleInserted" />
 	</div>
+
+		<div class="demo-wrap">
+	{{#if showThirdDemo}}
+			<div class="demo demo-3 hidden"
+					 ($inserted)="*animations.fadeIn" />
+	{{/if}}
+		</div>
 
 </script>
 <script src="../../node_modules/steal/steal.js" main="@empty">
@@ -48,11 +57,14 @@ body{
 	import stache from 'can-stache';
 	import canStacheBindings from 'can-stache-bindings';
 	import DefineMap from 'can-define/map/';
-	import "can-util/dom/events/inserted/inserted"; 
 
 	var TestMap = DefineMap.extend({
 				handleInserted(){
 					console.log("handleInserted");
+				},
+				showThirdDemo: {
+					type: "boolean",
+					value: false
 				}
 			}),
 			map = new TestMap({}),
@@ -60,5 +72,9 @@ body{
 
 	document.body.appendChild(frag);
 
+	setTimeout(function(){
+		console.log("show the third demo after some time");
+		map.showThirdDemo = true;
+	}, 2000);
 
 </script>
