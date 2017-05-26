@@ -28,29 +28,14 @@ body{
 </style>
 
 <script type="text/stache" id="demo-stache">
-		<can-import 
-			from="can-stache-animate" 
-			{^value.animations}="*animations" 
-		/>
-	<div class="demo-wrap">
+	<can-import from="can-stache-animate" {^value.animations}="*animations" />
 	{{#*animations}}
-		<div class="demo hidden" ($inserted)="*animations.fadeIn" />
-	{{/*animations}}
-	</div>
-
-	<div class="demo-wrap">
-		<div class="demo demo-2"
-				 ($inserted)="handleInserted" />
-	</div>
-
 		<div class="demo-wrap">
-	{{#if showThirdDemo}}
-			<div class="demo demo-3 hidden"
-					 ($inserted)="*animations.fadeIn" />
-	{{/if}}
+			<div class="demo hidden" ($inserted)="*animations.fadeIn" />
 		</div>
-
+	{{/*animations}}
 </script>
+
 <script src="../../node_modules/steal/steal.js" main="@empty">
 	import $ from 'jquery';
 	import 'can-view-import';
@@ -58,23 +43,10 @@ body{
 	import canStacheBindings from 'can-stache-bindings';
 	import DefineMap from 'can-define/map/';
 
-	var TestMap = DefineMap.extend({
-				handleInserted(){
-					console.log("handleInserted");
-				},
-				showThirdDemo: {
-					type: "boolean",
-					value: false
-				}
-			}),
+	var TestMap = DefineMap.extend({}),
 			map = new TestMap({}),
 			frag = stache.from("demo-stache")(map);
 
 	document.body.appendChild(frag);
-
-	setTimeout(function(){
-		console.log("show the third demo after some time");
-		map.showThirdDemo = true;
-	}, 2000);
 
 </script>
