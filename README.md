@@ -30,8 +30,8 @@ import canStacheAnimate from 'can-stache-animate';
 canStacheAnimate.setDuration(600);
 
 //register single animation
-canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
-	$.animate({
+canStacheAnimate.registerAnimation("myCustomAnimation",function(el, ev, options){
+	$(el).animate({
 		/* ... */	
 	});
 });
@@ -40,8 +40,8 @@ canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
 
 //register multiple animations
 canStacheAnimate.registerAnimations({
-	myCustomAnimation:function(vm, el, ev){
-		$.animate({
+	myCustomAnimation:function(el, ev, options){
+		$(el).animate({
 			/* ... */	
 		});
 	},
@@ -77,13 +77,13 @@ The `after` method is called when the `run` method has completed and is optional
 
 #### Each of these methods receives the following parameters:
 
-##### `context` - the context where the animation is being used
-
 ##### `element` - the element on which the animation is being used
 
 ##### `event` - the event that triggered the animation
 
-#### If any of these methods contain asynchronous functionalty, they should return a `Promise`.  for jQuery animations, you can simply use the [`.promise()` method](http://api.jquery.com/animate/#callbacks).
+##### `options` - a set of options such as `duration`
+
+#### If any of these methods contain asynchronous functionalty, they should return a `Promise`.
 
 Example:
 ```js
@@ -127,13 +127,14 @@ _**Note:** Returning false from either the `before` or `run` methods will stop f
 
 _**Note:** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  Simply return a `Promise`, ans resolve it when any async functionality has completed._
 
+_**Note:** For jQuery animations, you can simply use the [`.promise()` method](http://api.jquery.com/animate/#callbacks)._
 
 ### Function
 If an animation is a function, it is the same as providing that function as an object's `run` property and providing `null` to the `before` and `after` properties.
 
 Example:
 ```js
-canStacheAnimate.registerAnimation("myCustomAnimation",function(vm, el, ev){
+canStacheAnimate.registerAnimation("myCustomAnimation",function(el, ev, options){
 	$(el).animate({
 		"opacity": 0.5
 	})
@@ -149,27 +150,57 @@ canStacheAnimate.registerAnimation("myCustomAnimation":"fadeIn");
 ```
 _**Note:** "Already registered animations" include the out-of-the-box animations provided by `can-stache-animate`._
 
+### Strings as animation steps
+In addition to a registered animation value being a string identifier of another animation, `before`, `run`, and `after` animation properties can be string identifiers of other animations as well.  This is useful to chain animations together or provide modifications to things like duration for an existing animation.
+
+```js
+canStacheAnimate.registerAnimations({
+
+	"customFadeIn": function(el, ev, options){
+		return $(el).animate({
+			opacity: 0.8
+		}, options.duration).promise();
+	},
+	"customFadeOut": function(el, ev, options){
+		return $(el).animate({
+			opacity: 0.2
+		}, options.duration).promise();
+	},
+
+	"customPulse":{
+		before: "customFadeOut",
+		run: "customFadeIn"
+	},
+
+	"customPulseFast":{
+		duration: 100,
+		run: "customPulse"
+	}
+});
+```
+
 ## Animation events
-Sometimes it is useful to know when an animation has started or finished a particular phase.  We can accomplish this easily with events.
+Sometimes it is useful to know when an animation has started or finished a particular phase.  We can accomplish this easily with [can-util/dom/dispatch](https://canjs.com/doc/can-util/dom/dispatch/dispatch.html).
 
 Example:
-Register an custom animation, and dispatch events on the scope:
+Register an custom animation, and dispatch events on the element:
 ```js
+var domDispatch = require('can-util/dom/dispatch/dispatch');
 canStacheAnimate.registerAnimation("myCustomAnimation", {
-	before: function(vm, el, ev){
-		vm.dispatch("mycustomanimationbefore")
+	before: function(el, ev, options){
+	  domDispatch.apply(el, ["mycustomanimationbefore", [{test: "foo"}], false]);
 		$(el).hide().css({
 			"opacity": 0
 		})
 	},
-	run: function(vm, el, ev){
-		vm.dispatch("mycustomanimationrunning")
+	run: function(el, ev, options){
+		domDispatch.apply(el, ["mycustomanimationrunning", [{test: "foo"}], false]);
 		$(el).show().animate({
 			"opacity": 0
 		})
 	},
-	after: function(vm, el, ev){
-		vm.dispatch("mycustomanimationcomplete")
+	after: function(el, ev, options){
+		domDispatch.apply(el, ["mycustomanimationcomplete", [{test: "foo"}], false]);
 	}
 });
 ```
@@ -178,9 +209,9 @@ Listen for those events via stache:
 ```
 <div
  (. animate)="*animationsModule.default.animations.myCustomAnimation"
- (. mycustomanimationbefore)="handleAnimationBefore"
- (. mycustomanimationrunning)="handleAnimationRunning"
- (. mycustomanimationcomplete)="handleAnimationComplete"
+ ($mycustomanimationbefore)="handleAnimationBefore"
+ ($mycustomanimationrunning)="handleAnimationRunning"
+ ($mycustomanimationcomplete)="handleAnimationComplete"
   />
 ```
 
@@ -198,8 +229,6 @@ DefineMap.extend({
 	}
 })
 ```
-
-_**Note:** `dispatch()` takes a second parameter (see [canEvent.dispatch](https://canjs.com/doc/can-event.dispatch.html)), which is an array of arguments that will be provided as additional parameters in the event hanlder (eg: `vm.dispatch("customevent", [{a: "foo"}, {b: "bar"}])` and `handleCustomEvent(vm, el, ev, a, b){ /* a === {a: "foo"} && b === {b: "bar"} */`) _
 
 
 ## Special event handling
@@ -243,7 +272,7 @@ Here is an example of how to use the async event to write a `beforeremove` anima
 
 ```js
 canStacheAnimate.registerAnimation('customFadeOut', {
-	before: function(vm, el, ev){
+	before: function(el, ev, options){
 
 		// cancel the event under specified circumstances
 		if($(el).is(".cancel")){
@@ -258,11 +287,11 @@ canStacheAnimate.registerAnimation('customFadeOut', {
 		ev.pause();
 	},
 
-	run: function(vm, el, ev){
+	run: function(el, ev, options){
 		return $(el).fadeOut().promise()
 	},
 
-	after: function(vm, el, ev){
+	after: function(el, ev, options){
 		// the animation has completed, so we can continue with the default behavior
 		ev.resume();
 	}

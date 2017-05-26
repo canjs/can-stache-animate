@@ -34,12 +34,13 @@ body{
 
 	<div class="demo-wrap">
 		{{#if isHidden}}<p>hidden</p>{{else}}<p>visible</p>{{/if}}
+		{{#*animations}}
 		<div class="demo demo-2 {{#if isHidden}}hidden{{/if}}"
-				 (. fadein)="*animations.customFadeIn"
-				 (. customfadeinbefore)="handleAnimationBefore"
-				 (. customfadeinrunning)="handleAnimationRunning"
-				 (. customfadeincomplete)="handleAnimationComplete"
-				 ($inserted)="handleInserted" />
+				 ($customfadeinbefore)="handleAnimationBefore"
+				 ($customfadeinrunning)="handleAnimationRunning"
+				 ($customfadeincomplete)="handleAnimationComplete"
+				 ($inserted)="*animations.customFadeIn" />
+		{{/*animations}}
 	</div>
 
 </script>
@@ -49,23 +50,22 @@ body{
 	import stache from 'can-stache';
 	import canStacheBindings from 'can-stache-bindings';
 	import DefineMap from 'can-define/map/';
-	import "can-util/dom/events/inserted/inserted"; 
 
 	var TestMap = DefineMap.extend({
 				isHidden:{
 					value: true
 				},
-				handleInserted(){
-					console.log("handleInserted");
+				handleAnimationBefore(ctx, el, ev){
+					var eventArgs = ev.args;
+					console.log("handleAnimationBefore", eventArgs);
 				},
-				handleAnimationBefore(vm, el, ev, data){
-					console.log("handleAnimationBefore", data);
+				handleAnimationRunning(ctx, el, ev){
+					var eventArgs = ev.args;
+					console.log("handleAnimationRunning", eventArgs);
 				},
-				handleAnimationRunning(vm, el, ev, data){
-					console.log("handleAnimationRunning", data);
-				},
-				handleAnimationComplete(vm, el, ev, data){
-					console.log("handleAnimationAfter", data);
+				handleAnimationComplete(ctx, el, ev){
+					var eventArgs = ev.args;
+					console.log("handleAnimationAfter", eventArgs);
 					this.isHidden = false;
 				}
 			}),
@@ -73,11 +73,5 @@ body{
 			frag = stache.from("demo-stache")(map);
 
 	document.body.appendChild(frag);
-
-
-	setTimeout(() => {
-		console.log("dispatch event");
-		map.dispatch("fadein");
-	}, 1000)
 
 </script>

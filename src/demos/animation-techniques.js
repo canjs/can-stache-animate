@@ -4,41 +4,42 @@ var canStacheAnimate = require('can-stache-animate');
 canStacheAnimate.registerAnimations({
 	//hop cancels further animations
 	hop:{
-		before: function(vm, el, ev){
-			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+		before: function(el, ev, options){
+			return $(el).animate({
 				"margin-top":"-20px"
 			}, 400).promise().then(function(){
 				return false;
 			});
 		},
-		run: function(vm,el,ev){
-			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+		run: function(el, ev, options){
+			return $(el).animate({
 				"margin-top":"0px"
-			}, 400);
+			}, 400).promise();
 		}
 	},
 
 	dip:{
-    before: function(vm, el, ev){
-      return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+    before: function(el, ev, options){
+      return $(el).animate({
           "margin-top":"20px"
-      }, 2000);
+      }, 2000).promise();
     },
-    run: function(vm,el,ev){
-      return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+    run: function(el, ev, options){
+      return $(el).animate({
           "margin-top":"0px"
-      }, 2000);
+      }, 2000).promise();
     }
 	},
 
 	//hop2 & dip2 use only a function
-	hop2:function(vm,el,ev){
-		return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+	hop2:function(el, ev, options){
+		var $el = $(el);
+		return $el.animate({
 			"margin-top":"-20px"
-		}, 400).then(function(){
-			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+		}, 400).promise().then(function(){
+			return $el.animate({
 				"margin-top":"0px"
-			}, 400).then(function(){
+			}, 400).promise().then(function(){
 				$(el).css({
 					"margin-top":""
 				});
@@ -46,14 +47,15 @@ canStacheAnimate.registerAnimations({
 		});
 	},
 
-	dip2: function(vm,el,ev){
-		return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+	dip2: function(el, ev, options){
+		var $el = $(el);
+		return $el.animate({
 			"margin-top":"20px"
-		}, 2000).then(function(){
-			return canStacheAnimate.makeAnimationPromiseJQuery(el,{
+		}, 2000).promise().then(function(){
+			return $el.animate({
 				"margin-top":"0px"
-			}, 2000).then(function(){
-				$(el).css({
+			}, 2000).promise().then(function(){
+				$el.css({
 					"margin-top":""
 				});
 			});
@@ -62,12 +64,12 @@ canStacheAnimate.registerAnimations({
 
 	//hop3 & dip3 use jQuery's $.fn.animate().promise()
 	hop3:{
-		before: function(vm, el, ev){
+		before: function(el, ev, options){
 			return $(el).animate({
 				"margin-top":"-20px"
 			}, 400).promise();
 		},
-		run: function(vm,el,ev){
+		run: function(el, ev, options){
 			return $(el).animate({
 				"margin-top":"0px"
 			}, 400).promise();
@@ -75,12 +77,12 @@ canStacheAnimate.registerAnimations({
 	},
 
 	dip3:{
-    before: function(vm, el, ev){
+    before: function(el, ev, options){
       return $(el).animate({
           "margin-top":"20px"
       }, 2000).promise();
     },
-    run: function(vm,el,ev){
+    run: function(el, ev, options){
         console.log('c');
         return $(el).animate({
             "margin-top":"0px"

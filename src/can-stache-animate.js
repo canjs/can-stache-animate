@@ -16,16 +16,20 @@ canStacheAnimate.animationsMaps = [];
 canStacheAnimate.animations = {};
 
 canStacheAnimate.registerAnimations = function(animationsMap){
-	canStacheAnimate.animationsMaps.push(animationsMap);
+	this.animationsMaps.push(animationsMap);
 
 	for(var key in animationsMap){
 		if(animationsMap.hasOwnProperty(key)){
-			canStacheAnimate.registerAnimation(key, animationsMap[key]);
+			this.registerAnimation(key, animationsMap[key]);
 		}
 	}
 };
 
 /*
+ * @function registerAnimation
+ *
+ * @description adds an animation value with `key` to the registered animations map after expanding it
+ * 
  * @prop key
  * the identifier for the animation
  *
@@ -45,11 +49,28 @@ canStacheAnimate.registerAnimations = function(animationsMap){
  *
  */
 canStacheAnimate.registerAnimation = function(key, value){
+	var animation = this.expandAnimation(value);
+	//animation should be an object with at least a run method
+	if(isPlainObject(animation) && !!animation.run){
+		this.animations[key] = this.createHelperFromAnimation(animation);
+	}else{
+
+		//TODO: should we error instead of warn?
+		if(!animationIsObject){
+			console.warn("Invalid animation type for '" + key + "'. Animation should be a string, a function, or an object.");
+		}else if(!animationHasRunProperty){
+			console.warn("Invalid `animation.run` value for '" + key + "'. `animation.run` is required.");
+		}
+	}
+
+}
+
+canStacheAnimate.expandAnimation = function(value){
 	var animation = value;
 
 	//animation is a string -> look up in existing animations
 	if(typeof(animation) === 'string'){
-		animation = canStacheAnimate.getAnimationFromString(animation);
+		animation = this.getAnimationFromString(animation);
 	}
 
 	//animation is a function or promiseLike
@@ -62,24 +83,8 @@ canStacheAnimate.registerAnimation = function(key, value){
 		};
 	}
 
-	//animation is object
-	//				- assume before, run, after
-	var animationIsObject = isPlainObject(animation),
-			animationHasRunProperty = !!animation.run;
-
-	if(animationIsObject && animationHasRunProperty){
-		canStacheAnimate.animations[key] = canStacheAnimate.createHelperFromAnimation(animation);
-	}else{
-
-		//TODO: should we error instead of warn?
-		if(!animationIsObject){
-			console.warn("Invalid animation type for '" + key + "'. Animation should be a string, a function, or an object.");
-		}else if(!animationHasRunProperty){
-			console.warn("Invalid `animation.run` value for '" + key + "'. `animation.run` is required.");
-		}
-	}
-
-}
+	return animation;
+};
 
 
 /*
@@ -93,14 +98,14 @@ canStacheAnimate.getAnimationFromString = function(animation){
 	while(typeof(animation) === "string"){
 
 		//if we find a registered animation, use that
-		var finalAnimation = canStacheAnimate.animations[animation];
+		var finalAnimation = this.animations[animation];
 		if(finalAnimation){
 			animation = finalAnimation;
 			break;
 		}
 
 		//check the animationsMap for another value
-		animation = canStacheAnimate.lookupAnimationInAnimationsMaps(animation);
+		animation = this.lookupAnimationInAnimationsMaps(animation);
 	}
 	return animation;
 };
@@ -114,8 +119,8 @@ canStacheAnimate.getAnimationFromString = function(animation){
  */
 canStacheAnimate.lookupAnimationInAnimationsMaps = function(animation){
 	var returnVal, thisAnimation;
-	for(var i = 0; i < canStacheAnimate.animationsMaps.length; i++){
-		thisAnimation = canStacheAnimate.animationsMaps[i][animation];
+	for(var i = 0; i < this.animationsMaps.length; i++){
+		thisAnimation = this.animationsMaps[i][animation];
 		if(thisAnimation){
 			returnVal = thisAnimation;
 			break;
@@ -138,14 +143,24 @@ canStacheAnimate.lookupAnimationInAnimationsMaps = function(animation){
  */
 canStacheAnimate.createHelperFromAnimation = function(animation){
 
-	var before = canStacheAnimate.expandAnimationProp(animation.before),
-			run = canStacheAnimate.expandAnimationProp(animation.run, true),
-			after = canStacheAnimate.expandAnimationProp(animation.after);
+	var self = this,
+			before = this.expandAnimationProp(animation, 'before'),
+			run = this.expandAnimationProp(animation, 'run'),
+			after = this.expandAnimationProp(animation, 'after');
 
 	//by this time, `run` should be a function or a promise, 
 	//  and `before` and `after` should each be either a function, a promise, or null
-	return function(vm,el,ev){
+	return function(ctx,el,ev){
 	  var $el = $(el),
+
+	  		callMethod = function(method){
+		  		//check if this helper has already been converted to an animation helper
+					if(ev && ev.canStacheAnimate){
+			    	return method(ctx, el, ev);
+		    	}
+			    return method(el, ev, self.getOptions(el, ev, animation));
+	  		},
+
 	  		makePromise = function(method, required, invalidTypeWarning){
 	  			//check required
 	  			if(!method && !required){
@@ -161,7 +176,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 			    	console.warn(invalidTypeWarning);
 	  				return Promise.resolve(true);
 			    }else{
-			    	var res = method(vm,el,ev);
+			    	var res = callMethod(method);
 			    	if(res === false){
 			    		return Promise.reject(res);
 			    	}
@@ -231,18 +246,6 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 };
 
 /*
- * takes el and all the jquery animate params and 
- * returns a promise
- *
- */
-canStacheAnimate.makeAnimationPromiseJQuery = function(el, prop, speed, easing, callback){
-		var args = [...arguments],
-				$el = $(args.shift());
-
-		return $el.animate.apply($el, args).promise();
-}
-
-/*
  * converts an animation property into a function
  * @prop animationProp
  * one of `before`, `run`, `after`
@@ -256,7 +259,10 @@ canStacheAnimate.makeAnimationPromiseJQuery = function(el, prop, speed, easing, 
  * @returns function
  * 
  */
-canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject){
+canStacheAnimate.expandAnimationProp = function(animation, prop){
+
+	var self = this,
+			animationProp = animation[prop];
 
 	if(!animationProp){
 		return null;
@@ -265,23 +271,26 @@ canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject
 	//if starts with '.' - assumed to be a class, and that class will be applied
 	if(typeof(animationProp) === 'string'){
 		if(animationProp.substr(0,1) === '.'){
-			return function(vm,el,ev){
+			return function(el,ev, options){
+				//TODO: Remove jQuery and use classList
 				$(el).addClass(animationProp.substr(1));
 			}
 		}
 
 		//doesn't start with '.' - assumed to be the alias of a registered animation
-		return canStacheAnimate.getAnimationFromString(animationProp);
+		return this.getAnimationFromString(animationProp);
 	}
 
 	//object - assumed to be a css object and will be applied directly (no animation) for both `before` and `after`
 	if(isPlainObject(animationProp)){
-		if(animateWhenObject){
-			return function(vm,el,ev){
-				return canStacheAnimate.makeAnimationPromiseJQuery(el, animationProp);
+		if(prop === 'run'){
+			return function(el, ev, options){
+				//TODO: remove jquery
+				return $(el).animate(animationProp).promise();
 			}
 		}else{
-			return function(vm,el,ev){
+			return function(el, ev, options){
+				//TODO: remove jquery
 				$(el).css(animationProp);
 			}
 		}
@@ -289,16 +298,30 @@ canStacheAnimate.expandAnimationProp = function(animationProp, animateWhenObject
 
 	//function - will be executed in the proper secquence
 	if(typeof(animationProp) === 'function'){
-		return function(vm,el,ev){
-			return animationProp(vm,el,ev);
-		}
+		return animationProp;
 	}
 
 	console.warn("Invalid animation property type. Animation property should be a string, a function, or an object.");
+	return null;
+};
+
+//returns options for a specific animation function
+canStacheAnimate.getOptions = function(el, ev, animation){
+	var duration = typeof(animation.duration) !== 'undefined' ? animation.duration : this.duration,
+		opts = {
+			duration: duration,
+
+			canStacheAnimate: this, //do we need this reference?
+			animation: animation //do we need this reference?
+		};
+
+	return opts;
 };
 
 canStacheAnimate.setDuration = function(duration){
-	canStacheAnimate.duration = duration;
+	this.duration = duration;
+
+	//TODO: remove jQuery
 	$.fx.speeds._default = duration;
 }
 
