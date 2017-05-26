@@ -146,7 +146,8 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 	var self = this,
 			before = this.expandAnimationProp(animation, 'before'),
 			run = this.expandAnimationProp(animation, 'run'),
-			after = this.expandAnimationProp(animation, 'after');
+			after = this.expandAnimationProp(animation, 'after'),
+			stop = this.expandAnimationProp(animation, 'stop');
 
 	//by this time, `run` should be a function or a promise, 
 	//  and `before` and `after` should each be either a function, a promise, or null
@@ -196,51 +197,47 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 	  			});
 	  			return warnings;
 	  		}(),
-			  beforeError = function(){
-		    	//TODO: allow developers to provide a stop method so that they can use their own logic
-		    	$el.stop();
+	  		isStopped = false,
+	  		callStop = function(type){
+	  			isStopped = true;
+			  	if(typeof(stop) !== 'function'){
+			  		return false;
+			  	}
+
+			  	callMethod(stop);
 		    	return false;
-			  },
-			  runError = function(){
-		    	//TODO: allow developers to provide a stop method so that they can use their own logic
-		    	$el.stop();
-		    	return false;
-			  },
-			  afterError = function(){
-		    	//TODO: allow developers to provide a stop method so that they can use their own logic
-		    	$el.stop();
-		    	return false;
-			  };
+	  		};
+
 
 	  return makePromise(before, false, invalidTypeWarnings.before).then(function(){
 	  	var result = arguments[0];
 	    //allow canceling of further animations (`run`, and `after`)
-	    if(result === false){
-	      return beforeError();
+	    if(result === false || isStopped){
+	      return callStop('before');
 	    }
 
 	    return makePromise(run, true, invalidTypeWarnings.run).then(function(){
 		  	var result = arguments[0];
 
 				//allow canceling of further animations (`after`)
-	      if(result === false){
-		      return runError();
+	      if(result === false || isStopped){
+		      return callStop('run');
 	      }
 
 	      return makePromise(after, false, invalidTypeWarnings.after).then(function(){
 			  	var result = arguments[0];
-					//allow canceling of further animations (`after`)
-		      if(result === false){
-			      return afterError();
+					//call stop to reset if necessary
+		      if(result === false || isStopped){
+			      return callStop('after');
 		      }
 			  }, function(error){
-			  	return afterError();
+			  	return callStop('after');
 			  });
 		  }, function(error){
-		  	return runError();
+		  	return callStop('run');
 		  });
 	  }, function(error){
-	  	return beforeError();
+	  	return callStop('before');
 	  });
 	};
 };

@@ -4,17 +4,33 @@ var canStacheAnimate = require('can-stache-animate');
 canStacheAnimate.registerAnimations({
 	//hop cancels further animations
 	hop:{
+		duration: 1000,
 		before: function(el, ev, options){
-			return $(el).animate({
-				"margin-top":"-20px"
-			}, 400).promise().then(function(){
-				return false;
+			return new Promise(function(resolve, reject){
+				$(el).animate({
+					"margin-top":"-20px"
+				}, options.duration).promise().then(function(){
+					resolve();
+				});
+
+				//cancel the animation before it's done
+				//this should trigger the `stop` method to run
+				setTimeout(function(){
+					$(window).one('click', function(){
+						reject();
+					});
+				}, 0);
 			});
 		},
 		run: function(el, ev, options){
 			return $(el).animate({
 				"margin-top":"0px"
 			}, 400).promise();
+		},
+		stop: function(el, ev, options){
+			$(el).stop().animate({
+				"margin-top": 0
+			}, options.duration);
 		}
 	},
 
