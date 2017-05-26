@@ -21,7 +21,7 @@ module.exports = function(){
 	var args = Array.prototype.slice.call(arguments),
 		self = this;
 
-	return new Promise(function(resolve, reject){
+	return new Promise(function(resolve){
 		var runDefault = function(ev){
 				ev.defaultRan = true;
 				resolve();
@@ -35,7 +35,7 @@ module.exports = function(){
 			defaultPrevented: false,
 			defaultRan: false,
 			pause: function(){
-				ev.pauseCount++
+				ev.pauseCount++;
 			},
 			resume: function(){
 				ev.pauseCount--;

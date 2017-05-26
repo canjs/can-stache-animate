@@ -1,6 +1,5 @@
 var $ = require('jquery');
 var isPlainObject = require('can-util/js/is-plain-object/');
-var isPromiseLike = require('can-util/js/is-promise-like/');
 var canStacheAnimate = require('can-stache-animate');
 
 /*
@@ -32,11 +31,11 @@ canStacheAnimate.expandAnimationProp = function(animation, prop){
 		if(prop === 'run'){
 			return function(el, ev, options){
 				return $(el).animate(animationProp, options.duration).promise();
-			}
+			};
 		}else{
-			return function(el, ev, options){
+			return function(el){ 
 				$(el).css(animationProp);
-			}
+			};
 		}
 	}
 
@@ -48,7 +47,9 @@ var oldSetDuration = canStacheAnimate.setDuration;
 canStacheAnimate.setDuration = function(duration){
 	oldSetDuration.apply(this, arguments);
 	$.fx.speeds._default = duration;
-}
+};
+//set up default duration
+canStacheAnimate.setDuration(canStacheAnimate.duration);
 
 
 //jquery defaults

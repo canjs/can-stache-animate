@@ -16,9 +16,9 @@ var animations = {
 						"margin-left":""
 					});
 				});
-			})
-		})
+			});
+		});
 	}
 };
 
-module.exports = animations
+module.exports = animations;
