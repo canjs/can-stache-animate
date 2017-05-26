@@ -63,17 +63,17 @@ Then import your custom file instead of `can-stache-animate`.
 
 Animations can be a `string`, a `function`, or an `object`.  Let's take a look at how the different types work.
 
-### Object
+### `Object`
 If an animation is an object, it is expected to have the properties:
 
-#### Object.run - function - required
+#### `Object.run` - function - required
 The `run` method is the core animation method and is required.
 
-#### Object.before - function - optional
-The `before` method is called prior to the `run` method and is optional.  It is typically used to 'set the stage' for the animation – setting the `position` or `z-index` css properties of a parent element, for example.
+#### `Object.before` - function - optional
+The `before` method is called prior to the `run` method.  It is typically used to 'set the stage' for the animation – setting the `position` or `z-index` css properties of a parent element, for example.
 
-#### Object.after - function - optional
-The `after` method is called when the `run` method has completed and is optional.  It is typically revert any changes that were made during `before` or `run` so that the element can be back to its "ground state"
+#### `Object.after` - function - optional
+The `after` method is called when the `run` method has completed.  It is typically used to clean up any css properties or state from the element that were only needed for the animation itself and are no longer needed - resetting the `position` or `z-index` css properties of a parent element, for example.
 
 #### Each of these methods receives the following parameters:
 
@@ -128,6 +128,43 @@ _**Note:** Returning false from either the `before` or `run` methods will stop f
 _**Note:** When adding animations to the `before`, `run`, `after` methods, there is no need to us an `onComplete` (or similar) callback function.  Simply return a `Promise`, ans resolve it when any async functionality has completed._
 
 _**Note:** For jQuery animations, you can simply use the [`.promise()` method](http://api.jquery.com/animate/#callbacks)._
+
+
+#### `Object.stop` - function - optional
+The `stop` method is called when any one of the `before`, `run`, or `after` methods returns either `false` or a `Promise` that rejects.  It is used to revert any changes that were made during the animation so that the element can be set back to its "ground state".
+
+Example:
+```js
+	canStacheAnimate.registerAnimation("myCustomHopAnimation",{
+		duration: 1000,
+		before: function(el, ev, options){
+			return new Promise(function(resolve, reject){
+				$(el).animate({
+					"margin-top":"-20px"
+				}, options.duration).promise().then(function(){
+					resolve();
+				});
+
+				//when there is a click in the window,
+				//reject this promise which will cause
+				//the stop method to be called
+				$(window).one('click', function(){
+					reject();
+				});
+			});
+		},
+		run: function(el, ev, options){
+			return $(el).animate({
+				"margin-top":"0px"
+			}, 400).promise();
+		},
+		stop: function(el, ev, options){
+			$(el).stop().animate({
+				"margin-top": 0
+			}, options.duration);
+		}
+	});
+```
 
 ### Function
 If an animation is a function, it is the same as providing that function as an object's `run` property and providing `null` to the `before` and `after` properties.
