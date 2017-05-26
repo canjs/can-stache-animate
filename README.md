@@ -343,3 +343,29 @@ For example, conditionally render an element based on a scope property:
 	<div ($beforeremove)="*animations.customFadeOut" />
 {{/if}}
 ```
+
+## can-stache-animate-jquery
+`can-stache-animate` provides a jQuery extension for a bit of extra functionality.  It adds the ability to provide an object for each of the `before`, `run`, and `after` methods of an animation.
+
+### Providing an object
+Provide an object to an animation property, and it will be treated as a css object.  For `before` and `after`, `$.fn.css` will be used, and for `run`, `$.fn.animate` will be used.
+
+Example:
+```js
+var canStacheAnimate = require('can-stache-animate/can-stache-animate-jquery');
+canStacheAnimate.registerAnimation('blueRed', {
+
+	//background will be set to blue via $.fn.css
+	before:{
+		"background-color": "blue"
+	},
+
+	//blue will be animated to red
+	run: {
+		"background-color": "red"
+	},
+	after:{
+		"background-color": ""
+	}
+})
+```

@@ -21,19 +21,4 @@ var animations = {
 	}
 };
 
-//jquery defaults
-[
-	'slideDown', 
-	'slideUp', 
-	'slideToggle', 
-	'fadeIn', 
-	'fadeOut', 
-	'fadeToggle'
-].forEach(function(anim){
-	animations[anim] = function(el, ev, options) { 
-		$(el)[anim](options.duration); 
-	};
-});
-
-
 module.exports = animations

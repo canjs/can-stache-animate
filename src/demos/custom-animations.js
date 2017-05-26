@@ -1,5 +1,5 @@
 var $ = require('jquery');
-var canStacheAnimate = require('can-stache-animate');
+var canStacheAnimate = require('can-stache-animate/can-stache-animate-jquery');
 
 canStacheAnimate.setDuration(600);
 canStacheAnimate.registerAnimations({

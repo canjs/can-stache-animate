@@ -1,6 +1,4 @@
-var stache = require('can-stache');
 var defaultAnimations = require('./animations');
-var $ = require('jquery');
 var isPlainObject = require('can-util/js/is-plain-object/');
 var isPromiseLike = require('can-util/js/is-promise-like/');
 
@@ -152,9 +150,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 	//by this time, `run` should be a function or a promise, 
 	//  and `before` and `after` should each be either a function, a promise, or null
 	return function(ctx,el,ev){
-	  var $el = $(el),
-
-	  		callMethod = function(method){
+	  var callMethod = function(method){
 		  		//check if this helper has already been converted to an animation helper
 					if(ev && ev.canStacheAnimate){
 			    	return method(ctx, el, ev);
@@ -244,14 +240,15 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 
 /*
  * converts an animation property into a function
- * @prop animationProp
- * one of `before`, `run`, `after`
- * can be a string, object, or function
- *     - string (starts with '.') - assumed to be a class, and that class will be applied
- *     - string (doesn't start with '.') - assumed to be the alias of a registered animation
- *     - object - assumed to be a css object and will be applied directly (no animation) for both `before` and `after`
- *       					and will be animated via jQuery.animate for `run`
+ * @prop animation
+ * The full animation object
+ *
+ * Each of `before`, `run`, `after`, and `stop` can be a string or function
+ *     - string - assumed to be the alias of a registered animation
  *     - function - will be executed in the proper secquence
+ *
+ * @prop prop
+ * 'before' | 'run' | 'after' | 'stop'
  *
  * @returns function
  * 
@@ -265,40 +262,17 @@ canStacheAnimate.expandAnimationProp = function(animation, prop){
 		return null;
 	}
 
-	//if starts with '.' - assumed to be a class, and that class will be applied
+	// string - assumed to be the alias of a registered animation
 	if(typeof(animationProp) === 'string'){
-		if(animationProp.substr(0,1) === '.'){
-			return function(el,ev, options){
-				//TODO: Remove jQuery and use classList
-				$(el).addClass(animationProp.substr(1));
-			}
-		}
-
-		//doesn't start with '.' - assumed to be the alias of a registered animation
 		return this.getAnimationFromString(animationProp);
 	}
 
-	//object - assumed to be a css object and will be applied directly (no animation) for both `before` and `after`
-	if(isPlainObject(animationProp)){
-		if(prop === 'run'){
-			return function(el, ev, options){
-				//TODO: remove jquery
-				return $(el).animate(animationProp).promise();
-			}
-		}else{
-			return function(el, ev, options){
-				//TODO: remove jquery
-				$(el).css(animationProp);
-			}
-		}
-	}
-
-	//function - will be executed in the proper secquence
+	// function - will be executed in the proper secquence
 	if(typeof(animationProp) === 'function'){
 		return animationProp;
 	}
 
-	console.warn("Invalid animation property type. Animation property should be a string, a function, or an object.");
+	console.warn("Invalid animation property type. Animation property should be a string or a function.");
 	return null;
 };
 
@@ -317,9 +291,6 @@ canStacheAnimate.getOptions = function(el, ev, animation){
 
 canStacheAnimate.setDuration = function(duration){
 	this.duration = duration;
-
-	//TODO: remove jQuery
-	$.fx.speeds._default = duration;
 }
 
 canStacheAnimate.setDuration(400);
