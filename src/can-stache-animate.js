@@ -6,10 +6,11 @@ require("can-util/dom/events/inserted/inserted");
 require("can-util/dom/events/removed/removed"); 
 require('can-stache-animate/can-util/dom/mutate/mutate');
 
-var noop = function(){}; 
+
+
 var canStacheAnimate = {};
 
-canStacheAnimate.duration;
+canStacheAnimate.duration = 400;
 canStacheAnimate.animationsMaps = [];
 canStacheAnimate.animations = {};
 
@@ -47,13 +48,14 @@ canStacheAnimate.registerAnimations = function(animationsMap){
  *
  */
 canStacheAnimate.registerAnimation = function(key, value){
-	var animation = this.expandAnimation(value);
+	var animation = this.expandAnimation(value),
+			animationIsObject = isPlainObject(animation),
+			animationHasRunProperty = !!animation.run;
+
 	//animation should be an object with at least a run method
-	if(isPlainObject(animation) && !!animation.run){
+	if(animationIsObject && animationHasRunProperty){
 		this.animations[key] = this.createHelperFromAnimation(animation);
 	}else{
-
-		//TODO: should we error instead of warn?
 		if(!animationIsObject){
 			console.warn("Invalid animation type for '" + key + "'. Animation should be a string, a function, or an object.");
 		}else if(!animationHasRunProperty){
@@ -61,7 +63,7 @@ canStacheAnimate.registerAnimation = function(key, value){
 		}
 	}
 
-}
+};
 
 canStacheAnimate.expandAnimation = function(value){
 	var animation = value;
@@ -180,7 +182,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 
 			    	//animations aren't required to return anything
 			    	if(typeof(res) === 'undefined'){
-			    		return Promise.resolve(true)
+			    		return Promise.resolve(true);
 			    	}
 
 	  				return res;
@@ -194,7 +196,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 	  			return warnings;
 	  		}(),
 	  		isStopped = false,
-	  		callStop = function(type){
+	  		callStop = function(){
 	  			isStopped = true;
 			  	if(typeof(stop) !== 'function'){
 			  		return false;
@@ -226,13 +228,13 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
 		      if(result === false || isStopped){
 			      return callStop('after');
 		      }
-			  }, function(error){
+			  }, function(){
 			  	return callStop('after');
 			  });
-		  }, function(error){
+		  }, function(){
 		  	return callStop('run');
 		  });
-	  }, function(error){
+	  }, function(){
 	  	return callStop('before');
 	  });
 	};
@@ -255,8 +257,7 @@ canStacheAnimate.createHelperFromAnimation = function(animation){
  */
 canStacheAnimate.expandAnimationProp = function(animation, prop){
 
-	var self = this,
-			animationProp = animation[prop];
+	var animationProp = animation[prop];
 
 	if(!animationProp){
 		return null;
@@ -291,9 +292,8 @@ canStacheAnimate.getOptions = function(el, ev, animation){
 
 canStacheAnimate.setDuration = function(duration){
 	this.duration = duration;
-}
+};
 
-canStacheAnimate.setDuration(400);
 canStacheAnimate.registerAnimations(defaultAnimations);
 
 module.exports = canStacheAnimate;

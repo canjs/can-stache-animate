@@ -25,7 +25,7 @@ canStacheAnimate.registerAnimations({
 		run: function(el, ev, options){
 			return $(el).animate({
 				"margin-top":"0px"
-			}, 400).promise();
+			}, (options.duration * 0.5)).promise();
 		},
 		stop: function(el, ev, options){
 			$(el).stop().animate({
@@ -35,20 +35,21 @@ canStacheAnimate.registerAnimations({
 	},
 
 	dip:{
+		duration: 2000,
     before: function(el, ev, options){
       return $(el).animate({
           "margin-top":"20px"
-      }, 2000).promise();
+      }, options.duration).promise();
     },
     run: function(el, ev, options){
       return $(el).animate({
           "margin-top":"0px"
-      }, 2000).promise();
+      }, options.duration).promise();
     }
 	},
 
 	//hop2 & dip2 use only a function
-	hop2:function(el, ev, options){
+	hop2:function(el){
 		var $el = $(el);
 		return $el.animate({
 			"margin-top":"-20px"
@@ -63,7 +64,7 @@ canStacheAnimate.registerAnimations({
 		});
 	},
 
-	dip2: function(el, ev, options){
+	dip2: function(el){
 		var $el = $(el);
 		return $el.animate({
 			"margin-top":"20px"
@@ -80,15 +81,16 @@ canStacheAnimate.registerAnimations({
 
 	//hop3 & dip3 use jQuery's $.fn.animate().promise()
 	hop3:{
+		duration: 400,
 		before: function(el, ev, options){
 			return $(el).animate({
 				"margin-top":"-20px"
-			}, 400).promise();
+			}, options.duration).promise();
 		},
 		run: function(el, ev, options){
 			return $(el).animate({
 				"margin-top":"0px"
-			}, 400).promise();
+			}, options.duration).promise();
 		}
 	},
 
@@ -96,13 +98,13 @@ canStacheAnimate.registerAnimations({
     before: function(el, ev, options){
       return $(el).animate({
           "margin-top":"20px"
-      }, 2000).promise();
+      }, options.duration*5).promise();
     },
     run: function(el, ev, options){
         console.log('c');
         return $(el).animate({
             "margin-top":"0px"
-        }, 2000).promise();
+        }, options.duration*5).promise();
     }
 	}
 });

@@ -4,20 +4,20 @@ var domDispatch = require('can-util/dom/dispatch/dispatch');
 
 canStacheAnimate.registerAnimations({
 	customFadeIn:{
-		before:function(el, ev, options){
+		before:function(el){
 			domDispatch.apply(el, ["customfadeinbefore", [{test: "foo"}], false]);
 			$(el).css({
 				"display": "none",
 				"opacity": 0
 			});
 		},
-		run:function(el, ev, options){
+		run:function(el){
 			domDispatch.apply(el, ["customfadeinrunning", [{test: "foo"}], false]);
 			return $(el).show().animate({
 				"opacity": 1
 			}).promise();
 		},
-		after: function(el, ev, options){
+		after: function(el){
 			$(el).css({
 				"display": "",
 				"opacity": ""

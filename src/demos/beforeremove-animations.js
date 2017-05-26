@@ -3,7 +3,7 @@ var canStacheAnimate = require('can-stache-animate');
 
 canStacheAnimate.registerAnimations({
 	customFadeOut:{
-		before: function(el, ev, options){
+		before: function(el, ev){
 			console.log("customFadeOut - before", arguments);
 
 			if($(el).is(".cancel")){
@@ -15,11 +15,11 @@ canStacheAnimate.registerAnimations({
 
 			ev.pause();
 		},
-		run:function(el, ev, options){
+		run:function(el){
 			console.log("customFadeOut - run", arguments);
-			return $(el).fadeOut().promise()
+			return $(el).fadeOut().promise();
 		},
-		after: function(el, ev, options){
+		after: function(el, ev){
 			ev.resume();
 			console.log("customFadeOut - after", arguments);
 		}
