@@ -287,16 +287,16 @@ Wait for the animations to be in the scope before rendering the elements like th
 _**Note:** Set the element's style initially to `display:none;` because the `*animations.fadeIn` helper expects the element to not be displayed._
 
 
-### `$beforeremove`
-It is sometimes useful to perform an animation on an element prior to its being removed from the DOM.  `can-stache-animate` provides a `$beforeremove` event that can be used to accomplish this.  Here's how it works:
+### `$beforeremoved`
+It is sometimes useful to perform an animation on an element prior to its being removed from the DOM.  `can-stache-animate` provides a `$beforeremoved` event that can be used to accomplish this.  Here's how it works:
 
 #### dispatch-async
-The `$beforeremove` event is an async event which means that it has some additional methods that can be used during the event's lifetime.  
+The `$beforeremoved` event is an async event which means that it has some additional methods that can be used during the event's lifetime.  
 
 The most important of these methods are:
 
 ##### `event.pause()`
-Delay the execution of the event's default behavior until `event.resume()` is called.  In the case above, pausing the `$beforeremove` event would delay execution of the `$remove` event.
+Delay the execution of the event's default behavior until `event.resume()` is called.  In the case above, pausing the `$beforeremoved` event would delay execution of the `$remove` event.
 
 ##### `event.resume()`
 Continue executing the event's default behavior
@@ -304,8 +304,8 @@ Continue executing the event's default behavior
 ##### `event.cancel()`
 Prevent the event's default behavior similar to `.preventDefault()` in standard events.
 
-#### Writing the animation for `$beforeremove`
-Here is an example of how to use the async event to write a `beforeremove` animation:
+#### Writing the animation for `$beforeremoved`
+Here is an example of how to use the async event to write a `beforeremoved` animation:
 
 ```js
 canStacheAnimate.registerAnimation('customFadeOut', {
@@ -340,7 +340,7 @@ canStacheAnimate.registerAnimation('customFadeOut', {
 For example, conditionally render an element based on a scope property:
 ```
 {{#if showElement}}
-	<div ($beforeremove)="*animations.customFadeOut" />
+	<div ($beforeremoved)="*animations.customFadeOut" />
 {{/if}}
 ```
 

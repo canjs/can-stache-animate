@@ -65,6 +65,7 @@
     }
   },
   "dependencies": {
+    "can-cid": "^1.0.3",
     "can-component": "^3.0.7",
     "can-define": "^1.0.17",
     "can-stache": "^3.0.24",
