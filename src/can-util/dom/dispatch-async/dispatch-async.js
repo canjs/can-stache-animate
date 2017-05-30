@@ -13,52 +13,53 @@ var deepAssign = require("can-util/js/deep-assign/deep-assign");
  * @param {Object|String} event An object specifies options applied to this event.
  * @param {Array} [args] Arguments passed into this event.
  * @param {Boolean} [bubbles=true] Specifies whether this event should bubble (by default it will).
+ * @param {Function} [callback] Called when the default behavior should run.
  *
  * @returns {Promise} The promise will resolve when the event's default functionality should run
  *
  */
 module.exports = function(){
 	var args = Array.prototype.slice.call(arguments),
-		self = this;
-
-	return new Promise(function(resolve){
-		var runDefault = function(ev){
+			numArgs = args.length,
+			lastArg = args[args.length-1],
+			callback = typeof(lastArg) === 'function' ? lastArg : null,
+			runDefault = function(ev){
 				ev.defaultRan = true;
-				resolve();
+				if(callback){
+					callback(ev);
+				}
 			},
 			ev = typeof(ev) === 'string' ? { type: args[0] } : args[0];
 
-		//add async properties to the event
-		ev = deepAssign(ev, {
-			target: self,
-			pauseCount: 0,
-			defaultPrevented: false,
-			defaultRan: false,
-			pause: function(){
-				ev.pauseCount++;
-			},
-			resume: function(){
-				ev.pauseCount--;
-				if(ev.pauseCount === 0 && !ev.defaultRan && !ev.defaultPrevented) {
-					runDefault(ev);
-				}
-			},
-			
-			//TODO: can I use `preventDefault` instead of cancel?
-			//Might require a change to can-util/dom/events/events.dispatch 
-			//    - the `for(var prop in event)` loop
-			cancel: function(){
-				ev.defaultPrevented = true;
+	//add async properties to the event
+	ev = deepAssign(ev, {
+		pauseCount: 0,
+		defaultPrevented: false,
+		defaultRan: false,
+		pause: function(){
+			ev.pauseCount++;
+		},
+		resume: function(){
+			ev.pauseCount--;
+			if(ev.pauseCount === 0 && !ev.defaultRan && !ev.defaultPrevented) {
+				runDefault(ev);
 			}
-		});
-
-		//dispatch this event
-		args[0] = ev;
-		domEvents.dispatch.apply(self,args);
-
-		//run default if not paused and not prevented
-		if(ev.pauseCount === 0 && !ev.defaultPrevented) {
-			runDefault(ev);
+		},
+		
+		//TODO: can I use `preventDefault` instead of cancel?
+		//Might require a change to can-util/dom/events/events.dispatch 
+		//    - the `for(var prop in event)` loop
+		cancel: function(){
+			ev.defaultPrevented = true;
 		}
 	});
+
+	//dispatch this event
+	args[0] = ev;
+	domEvents.dispatch.apply(this,args);
+
+	//run default if not paused and not prevented
+	if(ev.pauseCount === 0 && !ev.defaultPrevented) {
+		runDefault(ev);
+	}
 };

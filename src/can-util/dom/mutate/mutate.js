@@ -6,7 +6,7 @@ domMutate.removeChild = function(child){
 	var self = this;
 	domDispatchAsync.call(child,{
 		type: "beforeremove"
-	}, [], false).then(function(){
+	}, [], false, function(){
 		oldRemoveChild.call(self, child);
 	});
 };
