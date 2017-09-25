@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<title>can-stache-animate - demo</title>
+<style>
+body{
+	background-color:#f0f0f0;
+}
+.slides{
+	position: relative;
+	display:block;
+	top:1em;
+	width: 800px;
+	height: 500px;
+}
+.slides.full{
+	position: absolute;
+	display:block;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+	z-index: 999999;
+}
+
+.slides .actions{
+	position: absolute;
+	z-index: 10;
+	top:0;
+	right:0;
+	display:none;
+}
+
+.slides .actions .action{
+	display: inline-block;
+	padding:.2em;
+	cursor: pointer;
+}
+
+.slide{
+	position: absolute;
+	width:100%;
+	height: 100%;
+	top:0;
+	left:0;
+	background-color: #555555;
+	display: none;
+}
+.slide .slide-inner{
+	position: absolute;
+	width:100%;
+	height: 100%;
+	top:0;
+	left:0;
+	background-color: #343055;
+	display:none;
+	overflow-y: auto;
+}
+.slide .slide-inner p{
+	padding:.3em .5em;
+	background-color:rgba(30,30,30,0.5);
+	color:#f0f0f0;
+	margin: .5em 1em;
+}
+
+</style>
+
+<script type="text/stache" id="demo-stache">
+		<can-import 
+			from="can-stache-animate/demos/slider/animations" 
+			{^value.animations}="*animations" 
+		/>
+
+	<ican-slider {(slides)}="demoSlides" />
+
+</script>
+
+<script type="text/stache" id="slider-stache">
+		<can-import 
+			from="can-stache-animate/demos/slider/animations" 
+			{^value.animations}="*animations"
+			{^value.helpers}="*animationHelpers"
+		/>
+
+	{{#if *animations}}
+		<div class="slides"
+				(. maximized)="*animations.maximize"
+				(. minimized)="*animations.minimize"
+				($mouseenter)="handleMouseenter"
+				($mouseleave)="handleMouseleave"
+		>
+
+			{{#if showActions}}
+			<div class="actions" 
+				($inserted)="*animations.fadeIn"
+				($beforeremoved)="*animations.customFadeOut"
+			>
+				{{#if canMaximize}}
+				<div class="action maximize" ($click)="toggleMaximize">
+					{{#if minimized}}
+						&lt;&nbsp;&gt;
+					{{/if}}
+					{{#if maximized}}
+						&gt;&nbsp;&lt;
+					{{/if}}
+				</div>
+				{{/if}}
+			</div>
+			{{/if}}
+
+
+			{{#each slides}}
+			  {{#if isActiveSlide(index)}}
+					<div class="slide" 
+						($inserted)="*animationHelpers.animationFromKey(%context, %element, %event, animateIn)"
+						($beforeremoved)="*animationHelpers.animationFromKey(%context, %element, %event, animateOut)"
+					>
+						<div class="slide-inner"
+							($inserted)="*animationHelpers.animationDelay(%context, %element, %event, 'slideLeftInStagger', 1000)"
+						>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+							<p>{{content}}</p>
+						</div>
+					</div>
+				{{/if}}
+			{{/each}}
+	  </div>
+  {{/if}}
+
+</script>
+<script src="../../../node_modules/steal/steal.js" main="@empty">
+	import $ from 'jquery';
+	import 'can-view-import';
+	import stache from 'can-stache';
+	import canStacheBindings from 'can-stache-bindings';
+	import DefineMap from 'can-define/map/';
+	import DefineList from 'can-define/list/';
+  import Component from "can-component";
+
+	var generateSlides = function(){
+  	let animationsIn = [
+  			"slideLeftIn",
+  			"slideIn",
+  			"slideRightIn",
+  			"fadeIn",
+  			"slideDown",
+  			"zoomIn",
+  			"zoomInBack",
+  			"zoomInFront"
+  		],
+  		animationsOut = [
+  			"slideLeftOut",
+  			"slideOut",
+  			"slideRightOut",
+  			"customFadeOut",
+  			"customSlideUp",
+  			"zoomOut",
+  			"zoomOutBack",
+  			"zoomOutFront"
+  		],
+  		slides = [];
+
+		for(var i = 0; i < 10; i++){
+			slides.push({
+				"content":"slide-"+i,
+				"index":i,
+				"animateIn": animationsIn[i%animationsIn.length],
+				"animateOut": animationsOut[(i+2)%animationsOut.length],
+				"animateInInner": animationsIn[(i+3)%animationsOut.length]
+			});
+		}
+		return slides;
+	};
+
+
+	var SliderVM = DefineMap.extend({
+				slides: {
+					Type: DefineList,
+					value: []
+				},
+				currentSlide: {
+					value: 0
+				},
+				numSlides:{
+					get(){
+						return this.slides.length;
+					}
+				},
+				wrap: {
+					type: "boolean",
+					value: true
+				},
+				canMaximize:{
+					type: "boolean",
+					value: true
+				},
+				maximized:{
+					type: "boolean",
+					value: false
+				},
+				minimized:{
+					type: "boolean",
+					get(){
+						return !this.maximized;
+					}
+				},
+				showActions:{
+					type: "boolean",
+					value: false
+				},
+
+				isActiveSlide(id){
+					return id === this.currentSlide;
+				},
+				goToSlide(id){
+					this.currentSlide = id;
+				},
+				next(){
+					const c = this.currentSlide,
+							n = c+1,
+							num = this.numSlides;
+
+					if(n === num && this.wrap){
+						this.goToSlide(0);
+					}else{
+						this.goToSlide(n);
+					}
+				},
+				prev(){
+					const c = this.currentSlide,
+							p = c-1,
+							num = this.numSlides;
+
+					if(p < 0 && this.wrap){
+						this.goToSlide(num-1);
+					}else{
+						this.goToSlide(p);
+					}
+				},
+				handleKeyup(ev){
+
+					const keycode = ev.keyCode;
+					
+					switch(keycode){
+						//left
+						case 37:
+							this.prev();
+							break;
+
+						//right
+						case 39:
+							this.next();
+							break;
+						//spacebar
+						case 32:
+							this.next();
+							break;
+						//escape
+						case 27:
+							if(this.maximized){
+								this.minimize();
+							}
+							break;
+						default:
+						
+						break;
+					}
+				},
+				handleMouseenter(ev){
+					this.showActions = true;
+				},
+				handleMouseleave(ev){
+					this.showActions = false;
+				},
+				toggleMaximize(vm,el,ev){
+					ev.preventDefault();
+					ev.stopPropagation();
+					this.maximized = !this.maximized;
+				},
+				maximize(){
+					this.maximized = true;
+				},
+				minimize(){
+					this.maximized = false;
+				}
+			}),
+			Slider = Component.extend({
+			  tag: "ican-slider",
+			  view: stache.from("slider-stache"),
+			  ViewModel: SliderVM,
+			  events: {
+			    click: function(){
+			        this.viewModel.next();
+			    },
+			    "{window} keyup":function(el, ev){
+			      this.viewModel.handleKeyup(ev);
+			    }
+			  }
+			});
+
+
+	var TestMap = DefineMap.extend({
+				demoSlides: {
+					Type: DefineList,
+					value: generateSlides()
+				}
+			}),
+			testMap = new TestMap({}),
+			frag = stache.from("demo-stache")(testMap);
+
+	document.body.appendChild(frag);
+
+
+</script>

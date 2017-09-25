@@ -96,14 +96,6 @@ canStacheAnimate.expandAnimation = function(value){
  */
 canStacheAnimate.getAnimationFromString = function(animation){
 	while(typeof(animation) === "string"){
-
-		//if we find a registered animation, use that
-		var finalAnimation = this.animations[animation];
-		if(finalAnimation){
-			animation = finalAnimation;
-			break;
-		}
-
 		//check the animationsMap for another value
 		animation = this.lookupAnimationInAnimationsMaps(animation);
 	}
@@ -273,8 +265,7 @@ canStacheAnimate.expandAnimationProp = function(animation, prop){
 		return animationProp;
 	}
 
-	console.warn("Invalid animation property type. Animation property should be a string or a function.");
-	return null;
+	return animationProp;
 };
 
 //returns options for a specific animation function
@@ -293,6 +284,28 @@ canStacheAnimate.getOptions = function(el, ev, animation){
 canStacheAnimate.setDuration = function(duration){
 	this.duration = duration;
 };
+
+
+canStacheAnimate.helpers = {};
+
+//gets an animation from a key
+canStacheAnimate.helpers.animationFromKey = function(ctx, el, ev, key){
+	return canStacheAnimate.animations[key](ctx, el, ev);
+}
+
+//delays for specified duration then sets animation from specified key
+canStacheAnimate.helpers.animationDelay = function(ctx, el, ev, key, duration){
+	if(typeof(duration) === 'undefined'){
+		duration = canStacheAnimate.duration;
+	}
+	var p = new Promise((resolve, reject) => {
+		setTimeout(resolve,duration);
+	});
+
+	return p.then(() => {
+		return canStacheAnimate.helpers.animationFromKey(ctx, el, ev, key);
+	});
+}
 
 canStacheAnimate.registerAnimations(defaultAnimations);
 
