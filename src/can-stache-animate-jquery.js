@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var isPlainObject = require('can-util/js/is-plain-object/');
 var canStacheAnimate = require('can-stache-animate');
+var defaultJqueryAnimations = require('./default-animations-jquery');
 
 /*
  * adds some jquery functionality to animation properties
@@ -19,11 +20,10 @@ var canStacheAnimate = require('can-stache-animate');
  */
 var oldExpandAnimationProp = canStacheAnimate.expandAnimationProp;
 canStacheAnimate.expandAnimationProp = function(animation, prop){
-
-	var animationProp = animation[prop];
+	var animationProp = oldExpandAnimationProp.apply(this, arguments);
 
 	if(!animationProp){
-		return null;
+		return animationProp;
 	}
 
 	//object - assumed to be a css object and will be applied directly (no animation) for both `before` and `after`
@@ -39,7 +39,7 @@ canStacheAnimate.expandAnimationProp = function(animation, prop){
 		}
 	}
 
-	return oldExpandAnimationProp.apply(this, arguments);
+	return animationProp;
 };
 
 //set up default jquery duration
@@ -50,22 +50,6 @@ canStacheAnimate.setDuration = function(duration){
 };
 //set up default duration
 canStacheAnimate.setDuration(canStacheAnimate.duration);
-
-
-//jquery defaults
-var defaultJqueryAnimations = {};
-[
-	'slideDown', 
-	'slideUp', 
-	'slideToggle', 
-	'fadeIn', 
-	'fadeOut', 
-	'fadeToggle'
-].forEach(function(anim){
-	defaultJqueryAnimations[anim] = function(el, ev, options) { 
-		$(el)[anim](options.duration); 
-	};
-});
 canStacheAnimate.registerAnimations(defaultJqueryAnimations);
 
 
