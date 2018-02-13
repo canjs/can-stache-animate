@@ -30,9 +30,9 @@ import canStacheAnimate from 'can-stache-animate';
 canStacheAnimate.setDuration(600);
 
 //register single animation
-canStacheAnimate.registerAnimation("myCustomAnimation",function(el, ev, options){
+canStacheAnimate.registerAnimation("myCustomAnimation", function(el, ev, options){
 	$(el).animate({
-		/* ... */	
+		/* ... */
 	});
 });
 
@@ -40,12 +40,12 @@ canStacheAnimate.registerAnimation("myCustomAnimation",function(el, ev, options)
 
 //register multiple animations
 canStacheAnimate.registerAnimations({
-	myCustomAnimation:function(el, ev, options){
+	myCustomAnimation: function(el, ev, options){
 		$(el).animate({
-			/* ... */	
+			/* ... */
 		});
 	},
-	/* ...other animations... */
+	// other animations
 });
 
 export default canStacheAnimate;
@@ -183,7 +183,7 @@ If an animation is a string, it is simply set up as an alias to an animation tha
 
 Example:
 ```js
-canStacheAnimate.registerAnimation("myCustomAnimation":"fadeIn");
+canStacheAnimate.registerAnimation("myCustomAnimation", "fadeIn");
 ```
 _**Note:** "Already registered animations" include the out-of-the-box animations provided by `can-stache-animate`._
 
@@ -315,7 +315,7 @@ canStacheAnimate.registerAnimation('customFadeOut', {
 		if($(el).is(".cancel")){
 			ev.cancel();
 
-			// return false to stop the remaining animation methods from running 
+			// return false to stop the remaining animation methods from running
 			// (`run` and `after`)
 			return false;
 		}
