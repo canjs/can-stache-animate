@@ -23,30 +23,33 @@ To create your own custom animations, create a file (we'll call it `custom-anima
 and import `can-stache-animate`.  Use the `registerAnimation` and `registerAnimations` methods to register your animations.
 
 ```js
-import $ from 'jquery';
-import canStacheAnimate from 'can-stache-animate';
+import $ from "jquery";
+import canStacheAnimate from "can-stache-animate";
 
 //sets the global duration
-canStacheAnimate.setDuration(600);
+canStacheAnimate.setDuration( 600 );
 
 //register single animation
-canStacheAnimate.registerAnimation("myCustomAnimation", function(el, ev, options){
-	$(el).animate({
+canStacheAnimate.registerAnimation( "myCustomAnimation", function( el, ev, options ) {
+	$( el ).animate( {
+
 		/* ... */
-	});
-});
+	} );
+} );
 
 /* OR */
 
 //register multiple animations
-canStacheAnimate.registerAnimations({
-	myCustomAnimation: function(el, ev, options){
-		$(el).animate({
+canStacheAnimate.registerAnimations( {
+	myCustomAnimation: function( el, ev, options ) {
+		$( el ).animate( {
+
 			/* ... */
-		});
-	},
+		} );
+	}
+
 	// other animations
-});
+} );
 
 export default canStacheAnimate;
 
@@ -87,40 +90,40 @@ The `after` method is called when the `run` method has completed.  It is typical
 
 Example:
 ```js
-canStacheAnimate.registerAnimation("myCustomShakeAnimation",{
-	before: function(vm, el, ev){
-		const $el = $(el);
-		$el.parent().css({
-			"position":"relative"
-		})
-		$el.css({
-			"position":"absolute"
-		})
+canStacheAnimate.registerAnimation( "myCustomShakeAnimation", {
+	before: function( vm, el, ev ) {
+		const $el = $( el );
+		$el.parent().css( {
+			"position": "relative"
+		} );
+		$el.css( {
+			"position": "absolute"
+		} );
 	},
-	run: function(vm, el, ev){
-		const $el = $(el);
-		return $el.animate({
-			"left":"-100px"
-		}).promise().then(function(){
-			return $el.animate({
-				"left":"100px"
-			}).promise().then(function(){
-				return $el.animate({
+	run: function( vm, el, ev ) {
+		const $el = $( el );
+		return $el.animate( {
+			"left": "-100px"
+		} ).promise().then( function() {
+			return $el.animate( {
+				"left": "100px"
+			} ).promise().then( function() {
+				return $el.animate( {
 					"left": "0px"
-				}).promise();
-			})
-		}).promise()
+				} ).promise();
+			} );
+		} ).promise();
 	},
-	after: function(vm, el, ev){
-		const $el = $(el);
-		$el.parent().css({
-			"position":""
-		})
-		$el.css({
-			"position":""
-		})
+	after: function( vm, el, ev ) {
+		const $el = $( el );
+		$el.parent().css( {
+			"position": ""
+		} );
+		$el.css( {
+			"position": ""
+		} );
 	}
-});
+} );
 ```
 
 _**Note:** Returning false from either the `before` or `run` methods will stop further animations from being executed._
@@ -135,35 +138,35 @@ The `stop` method is called when any one of the `before`, `run`, or `after` meth
 
 Example:
 ```js
-canStacheAnimate.registerAnimation("myCustomHopAnimation",{
+canStacheAnimate.registerAnimation( "myCustomHopAnimation", {
 	duration: 1000,
-	before: function(el, ev, options){
-		return new Promise(function(resolve, reject){
-			$(el).animate({
-				"margin-top":"-20px"
-			}, options.duration).promise().then(function(){
+	before: function( el, ev, options ) {
+		return new Promise( function( resolve, reject ) {
+			$( el ).animate( {
+				"margin-top": "-20px"
+			}, options.duration ).promise().then( function() {
 				resolve();
-			});
+			} );
 
 			//when there is a click in the window,
 			//reject this promise which will cause
 			//the stop method to be called
-			$(window).one('click', function(){
+			$( window ).one( "click", function() {
 				reject();
-			});
-		});
+			} );
+		} );
 	},
-	run: function(el, ev, options){
-		return $(el).animate({
-			"margin-top":"0px"
-		}, 400).promise();
+	run: function( el, ev, options ) {
+		return $( el ).animate( {
+			"margin-top": "0px"
+		}, 400 ).promise();
 	},
-	stop: function(el, ev, options){
-		$(el).stop().animate({
+	stop: function( el, ev, options ) {
+		$( el ).stop().animate( {
 			"margin-top": 0
-		}, options.duration);
+		}, options.duration );
 	}
-});
+} );
 ```
 
 ### Function
@@ -171,11 +174,11 @@ If an animation is a function, it is the same as providing that function as an o
 
 Example:
 ```js
-canStacheAnimate.registerAnimation("myCustomAnimation",function(el, ev, options){
-	$(el).animate({
+canStacheAnimate.registerAnimation( "myCustomAnimation", function( el, ev, options ) {
+	$( el ).animate( {
 		"opacity": 0.5
-	})
-});
+	} );
+} );
 ```
 
 ### String
@@ -183,7 +186,7 @@ If an animation is a string, it is simply set up as an alias to an animation tha
 
 Example:
 ```js
-canStacheAnimate.registerAnimation("myCustomAnimation", "fadeIn");
+canStacheAnimate.registerAnimation( "myCustomAnimation", "fadeIn" );
 ```
 _**Note:** "Already registered animations" include the out-of-the-box animations provided by `can-stache-animate`._
 
@@ -191,29 +194,29 @@ _**Note:** "Already registered animations" include the out-of-the-box animations
 In addition to a registered animation value being a string identifier of another animation, `before`, `run`, and `after` animation properties can be string identifiers of other animations as well.  This is useful to chain animations together or provide modifications to things like duration for an existing animation.
 
 ```js
-canStacheAnimate.registerAnimations({
+canStacheAnimate.registerAnimations( {
 
-	"customFadeIn": function(el, ev, options){
-		return $(el).animate({
+	"customFadeIn": function( el, ev, options ) {
+		return $( el ).animate( {
 			opacity: 0.8
-		}, options.duration).promise();
+		}, options.duration ).promise();
 	},
-	"customFadeOut": function(el, ev, options){
-		return $(el).animate({
+	"customFadeOut": function( el, ev, options ) {
+		return $( el ).animate( {
 			opacity: 0.2
-		}, options.duration).promise();
+		}, options.duration ).promise();
 	},
 
-	"customPulse":{
+	"customPulse": {
 		before: "customFadeOut",
 		run: "customFadeIn"
 	},
 
-	"customPulseFast":{
+	"customPulseFast": {
 		duration: 100,
 		run: "customPulse"
 	}
-});
+} );
 ```
 
 ## Animation events
@@ -222,24 +225,24 @@ Sometimes it is useful to know when an animation has started or finished a parti
 Example:
 Register an custom animation, and dispatch events on the element:
 ```js
-import domDispatch from 'can-util/dom/dispatch/dispatch';
-canStacheAnimate.registerAnimation("myCustomAnimation", {
-	before: function(el, ev, options){
-		domDispatch.apply(el, ["mycustomanimationbefore", [{test: "foo"}], false]);
-		$(el).hide().css({
+import domDispatch from "can-util/dom/dispatch/dispatch";
+canStacheAnimate.registerAnimation( "myCustomAnimation", {
+	before: function( el, ev, options ) {
+		domDispatch.apply( el, [ "mycustomanimationbefore", [ { test: "foo" } ], false ] );
+		$( el ).hide().css( {
 			"opacity": 0
-		})
+		} );
 	},
-	run: function(el, ev, options){
-		domDispatch.apply(el, ["mycustomanimationrunning", [{test: "foo"}], false]);
-		$(el).show().animate({
+	run: function( el, ev, options ) {
+		domDispatch.apply( el, [ "mycustomanimationrunning", [ { test: "foo" } ], false ] );
+		$( el ).show().animate( {
 			"opacity": 0
-		})
+		} );
 	},
-	after: function(el, ev, options){
-		domDispatch.apply(el, ["mycustomanimationcomplete", [{test: "foo"}], false]);
+	after: function( el, ev, options ) {
+		domDispatch.apply( el, [ "mycustomanimationcomplete", [ { test: "foo" } ], false ] );
 	}
-});
+} );
 ```
 
 Listen for those events via stache:
@@ -254,17 +257,17 @@ Listen for those events via stache:
 
 Then handle the events from within the scope or viewmodel:
 ```js
-DefineMap.extend({
-	handleAnimationBefore(vm, el, ev){
-		console.log("handleAnimationBefore");
+DefineMap.extend( {
+	handleAnimationBefore( vm, el, ev ) {
+		console.log( "handleAnimationBefore" );
 	},
-	handleAnimationRunning(vm, el, ev){
-		console.log("handleAnimationRunning");
+	handleAnimationRunning( vm, el, ev ) {
+		console.log( "handleAnimationRunning" );
 	},
-	handleAnimationComplete(vm, el, ev){
-		console.log("handleAnimationAfter");
+	handleAnimationComplete( vm, el, ev ) {
+		console.log( "handleAnimationAfter" );
 	}
-})
+} );
 ```
 
 
@@ -308,11 +311,11 @@ Prevent the event's default behavior similar to `.preventDefault()` in standard 
 Here is an example of how to use the async event to write a `beforeremove` animation:
 
 ```js
-canStacheAnimate.registerAnimation('customFadeOut', {
-	before: function(el, ev, options){
+canStacheAnimate.registerAnimation( "customFadeOut", {
+	before: function( el, ev, options ) {
 
 		// cancel the event under specified circumstances
-		if($(el).is(".cancel")){
+		if ( $( el ).is( ".cancel" ) ) {
 			ev.cancel();
 
 			// return false to stop the remaining animation methods from running
@@ -324,15 +327,16 @@ canStacheAnimate.registerAnimation('customFadeOut', {
 		ev.pause();
 	},
 
-	run: function(el, ev, options){
-		return $(el).fadeOut().promise()
+	run: function( el, ev, options ) {
+		return $( el ).fadeOut().promise();
 	},
 
-	after: function(el, ev, options){
+	after: function( el, ev, options ) {
+
 		// the animation has completed, so we can continue with the default behavior
 		ev.resume();
 	}
-});
+} );
 ```
 
 #### Use Stache for adding/removing elements
@@ -352,11 +356,11 @@ Provide an object to an animation property, and it will be treated as a css obje
 
 Example:
 ```js
-import canStacheAnimate from 'can-stache-animate/can-stache-animate-jquery';
-canStacheAnimate.registerAnimation('blueRed', {
+import canStacheAnimate from "can-stache-animate/can-stache-animate-jquery";
+canStacheAnimate.registerAnimation( "blueRed", {
 
 	//background will be set to blue via $.fn.css
-	before:{
+	before: {
 		"background-color": "blue"
 	},
 
@@ -364,8 +368,8 @@ canStacheAnimate.registerAnimation('blueRed', {
 	run: {
 		"background-color": "red"
 	},
-	after:{
+	after: {
 		"background-color": ""
 	}
-})
+} );
 ```
