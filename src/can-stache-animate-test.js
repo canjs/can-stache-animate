@@ -3,6 +3,6 @@ var canStacheAnimate = require('./can-stache-animate');
 
 QUnit.module('can-stache-animate');
 
-QUnit.test('canStacheAnimate has default animations', function(){
-  QUnit.ok(Object.keys(canStacheAnimate.animations).length, "Has default animations");
+QUnit.test('canStacheAnimate has default animations', function(assert) {
+  assert.ok(Object.keys(canStacheAnimate.animations).length, "Has default animations");
 });
